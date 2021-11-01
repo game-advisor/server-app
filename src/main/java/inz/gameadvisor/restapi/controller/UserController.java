@@ -15,14 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
+
     private final UserService userService;
 
     @GetMapping("/users")
-    @ApiOperation(value = "", authorizations = { @Authorization(value="jwtToken") })
-    public List<User> getUsers()
-    {
-        return userService.getUsers();
-    }
+    @ApiOperation(value = "",authorizations = {@Authorization(value = "jwtToken")})
+    public List<User> getUsers() {return userService.getUsers();}
 
     @GetMapping("/user/{id}")
     public User getUserInfo(@PathVariable long id) {return userService.getUserInfo(id);}
