@@ -1,1 +1,0 @@
-INSERT INTO post (id,title,content) values (null, 'Test pos 1','Content 1');
