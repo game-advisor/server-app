@@ -21,15 +21,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public List<User> getUsers()
-    {
-        if(userRepository.findAll().isEmpty())
-        {
-            throw new UserNotFoundException("");
-        }
-        else
-            return userRepository.findAll();
-    }
 
     public User getUserInfo(long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("No such user"));

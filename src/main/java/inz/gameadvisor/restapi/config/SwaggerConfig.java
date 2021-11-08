@@ -24,20 +24,15 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .apiInfo(apiInfo())
-                .securitySchemes(Arrays.asList(apiKey()));
+                .apiInfo(apiInfo());
     }
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("GameAdvisor REST API Documentation")
                 .description("work in progress")
-                .termsOfServiceUrl("localhost")
+                .termsOfServiceUrl("localhost/tos")
                 .version("1.0")
                 .build();
-    }
-
-    private ApiKey apiKey() {
-        return new ApiKey("jwtToken", "Authorization", "header");
     }
 }
