@@ -21,7 +21,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-
     public User getUserInfo(long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("No such user"));
     }
