@@ -28,10 +28,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final ObjectMapper objectMapper;
     private final RestAuthenticationSuccessHandler successHandler;
     private final RestAuthenticationFailureHandler failureHandler;
+    private String userByEmailQuery = "SELECT email, password, enabled FROM users where email = ?;";
+    private String roleByEmailQuery = "SELECT email, authority FROM authorities where email = ?;";
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication().dataSource(dataSource);
+        // auth.jdbcAuthentication().dataSource(dataSource).usersByUsernameQuery(userByEmailQuery).authoritiesByUsernameQuery(roleByEmailQuery);
     }
 
     @Override
@@ -45,6 +48,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/v2/api-docs").permitAll()
                 .antMatchers("/webjars/**").permitAll()
                 .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/register").permitAll()
+                .antMatchers("/process_register").permitAll()
+                .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(authenticationFilter())
