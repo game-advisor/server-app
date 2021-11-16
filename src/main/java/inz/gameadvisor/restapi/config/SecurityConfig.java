@@ -2,21 +2,14 @@ package inz.gameadvisor.restapi.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
 
@@ -28,13 +21,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final ObjectMapper objectMapper;
     private final RestAuthenticationSuccessHandler successHandler;
     private final RestAuthenticationFailureHandler failureHandler;
-    private String userByEmailQuery = "SELECT email, password, enabled FROM users where email = ?;";
-    private String roleByEmailQuery = "SELECT email, authority FROM authorities where email = ?;";
 
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // auth.jdbcAuthentication().dataSource(dataSource).usersByUsernameQuery(userByEmailQuery).authoritiesByUsernameQuery(roleByEmailQuery);
+        String userByEmailQuery = "SELECT email, password, enabled FROM users where email = ?;";
+        String roleByEmailQuery = "SELECT email, authority FROM authorities where email = ?;";
+        auth.jdbcAuthentication().dataSource(dataSource).usersByUsernameQuery(userByEmailQuery).authoritiesByUsernameQuery(roleByEmailQuery);
     }
 
     @Override
