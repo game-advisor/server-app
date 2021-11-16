@@ -7,12 +7,16 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
+import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @Configuration
 public class SwaggerConfig {
@@ -24,7 +28,28 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .apiInfo(apiInfo());
+                .apiInfo(apiInfo())
+                .securitySchemes(singletonList(createSchema()))
+                .securityContexts(singletonList(createContext()));
+    }
+
+    private SecurityContext createContext() {
+        return SecurityContext.builder()
+                .securityReferences(createRef())
+                .forPaths(PathSelectors.any())
+                .build();
+    }
+
+    private List<SecurityReference> createRef(){
+        AuthorizationScope authorizationScope = new AuthorizationScope(
+                "global", "accessEverything");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return singletonList(new SecurityReference("apiKey",authorizationScopes));
+    }
+
+    private SecurityScheme createSchema(){
+        return new ApiKey("apiKey","Authorization","header");
     }
 
     private ApiInfo apiInfo() {

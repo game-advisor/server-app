@@ -9,5 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class LogoutController {
 
     @PostMapping("/logout")
-    public void logout(){}
+    public void logout(){
+
+    }
 }
