@@ -18,7 +18,6 @@ import java.io.IOException;
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
         private static final String TOKEN_HEADER = "Authorization";
-        private static final String TOKEN_PREFIX = "Bearer ";
         private final UserDetailsService userDetailsService;
         private final String secret;
 
@@ -44,10 +43,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
         private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
             String token = request.getHeader(TOKEN_HEADER); // 3
-            if (token != null && token.startsWith(TOKEN_PREFIX)) {
+            if (token != null) {
                 String userName = JWT.require(Algorithm.HMAC256(secret)) // 4
                         .build()
-                        .verify(token.replace(TOKEN_PREFIX, "")) // 5
+                        .verify(token) // 5
                         .getSubject(); // 6
                 if (userName != null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(userName); // 7
