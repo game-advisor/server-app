@@ -18,6 +18,7 @@ public class UsersService {
     private final UsersRepository usersRepository;
 
     public Users getUsersInfo(long id) {
+
         return usersRepository.findById(id).orElseThrow(() -> new UsersNotFoundException("No such user"));
     }
 

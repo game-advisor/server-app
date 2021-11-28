@@ -1,6 +1,6 @@
 package inz.gameadvisor.restapi.controller;
 
-import inz.gameadvisor.restapi.config.RegisterCredentials;
+import inz.gameadvisor.restapi.model.RegisterCredentials;
 import inz.gameadvisor.restapi.model.Authorities;
 import inz.gameadvisor.restapi.model.Users;
 import inz.gameadvisor.restapi.repository.AuthorityRepository;

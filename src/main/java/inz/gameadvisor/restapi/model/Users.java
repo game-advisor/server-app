@@ -31,7 +31,7 @@ public class Users {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private @JsonIgnore String email;
+    private String email;
 
     @Column(name= "avatarPath",columnDefinition = "varchar(255) default 'img/defaultAvatar64x64.png'",nullable = false)
     @NotNull

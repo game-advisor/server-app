@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class Authorities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long authorityID;
+    private long ID;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull

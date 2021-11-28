@@ -1,6 +1,6 @@
 package inz.gameadvisor.restapi.controller;
 
-import inz.gameadvisor.restapi.config.LoginCredentials;
+import inz.gameadvisor.restapi.model.LoginCredentials;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
