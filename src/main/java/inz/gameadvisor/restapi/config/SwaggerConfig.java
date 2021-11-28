@@ -36,7 +36,7 @@ public class SwaggerConfig {
     private SecurityContext createContext() {
         return SecurityContext.builder()
                 .securityReferences(createRef())
-                .forPaths(PathSelectors.any())
+                .operationSelector(operationContext -> true)
                 .build();
     }
 

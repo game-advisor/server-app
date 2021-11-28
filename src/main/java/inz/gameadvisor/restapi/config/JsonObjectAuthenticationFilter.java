@@ -5,6 +5,7 @@ import inz.gameadvisor.restapi.model.LoginCredentials;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ public class JsonObjectAuthenticationFilter extends UsernamePasswordAuthenticati
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws UsernameNotFoundException {
         try {
             BufferedReader reader = request.getReader();
             StringBuilder sb = new StringBuilder();
