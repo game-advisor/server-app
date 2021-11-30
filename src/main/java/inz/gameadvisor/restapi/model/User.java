@@ -6,13 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 
 @Entity
 @Getter
 @Setter
 @Table(name = "users")
-public class Users {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long userID;
@@ -36,4 +38,8 @@ public class Users {
     @Column(name= "avatarPath",columnDefinition = "varchar(255) default 'img/defaultAvatar64x64.png'",nullable = false)
     @NotNull
     private String avatarPath;
+
+    @Column(columnDefinition = "varchar(255)",nullable = false)
+    @NotNull
+    private long authorityID;
 }

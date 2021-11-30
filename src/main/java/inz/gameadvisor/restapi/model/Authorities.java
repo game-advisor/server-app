@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,4 +23,11 @@ public class Authorities {
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
     private String authority;
+
+    @Override
+    public String toString() {
+        return "Authorities{" +
+                "authority='" + authority + '\'' +
+                '}';
+    }
 }

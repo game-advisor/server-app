@@ -28,6 +28,7 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
+                .useDefaultResponseMessages(false)
                 .apiInfo(apiInfo())
                 .securitySchemes(singletonList(createSchema()))
                 .securityContexts(singletonList(createContext()));

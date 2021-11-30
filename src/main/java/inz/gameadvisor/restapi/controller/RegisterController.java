@@ -2,9 +2,9 @@ package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.model.RegisterCredentials;
 import inz.gameadvisor.restapi.model.Authorities;
-import inz.gameadvisor.restapi.model.Users;
-import inz.gameadvisor.restapi.repository.AuthorityRepository;
-import inz.gameadvisor.restapi.repository.UsersRepository;
+import inz.gameadvisor.restapi.model.User;
+import inz.gameadvisor.restapi.repository.AuthoritiesRepository;
+import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,29 +12,30 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequiredArgsConstructor
 public class RegisterController {
 
-    private final UsersRepository usersRepository;
-    private final AuthorityRepository authorityRepository;
+    private final UserRepository userRepository;
+    private final AuthoritiesRepository authoritiesRepository;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public Users register(@RequestBody RegisterCredentials registerCredentials){
-        Authorities authorities = new Authorities();
-        authorities.setUsername(registerCredentials.getUsername());
-        authorities.setAuthority("ROLE_USER");
-        authorityRepository.save(authorities);
+    public User register(@RequestBody RegisterCredentials registerCredentials){
+        List<Authorities> authorities = authoritiesRepository.findAll();
 
-        Users user = new Users();
+        authorities.toString();
+
+        User user = new User();
         user.setEmail(registerCredentials.getEmail());
         user.setUsername(registerCredentials.getUsername());
         user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
         user.setAvatarPath("img/defaultAvatar64x64.png");
         user.setEnabled("1");
 
-        return usersRepository.save(user);
-    };
+        return userRepository.save(user);
+    }
 }
