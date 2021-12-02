@@ -29,7 +29,7 @@ public class User {
 
     @Column(columnDefinition = "varchar(16)",nullable = false)
     @NotNull
-    private @JsonIgnore String enabled;
+    private @JsonIgnore boolean enabled;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
@@ -41,5 +41,5 @@ public class User {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private long authorityID;
+    private String roles;
 }

@@ -1,12 +1,15 @@
 package inz.gameadvisor.restapi.controller;
 
+import inz.gameadvisor.restapi.model.LoginCredentials;
+import inz.gameadvisor.restapi.model.RegisterCredentials;
 import inz.gameadvisor.restapi.model.User;
 import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -20,25 +23,37 @@ public class UserController {
     private String secret;
 
 
-    @GetMapping("/user/{id}")
+
+    @GetMapping("/api/user/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public User getUsersInfo(@PathVariable long id,
-                             @ApiIgnore @RequestHeader("Authorization") String token) throws UserService.UsersNotFoundException {
-        return userService.getUsersInfo(id,token);
+    public User getUserInfo(@PathVariable long id,
+                             @ApiIgnore @RequestHeader("Authorization") String token) throws UserService.MyUserNotFoundException {
+        return userService.getUserInfo(id,token);
     }
 
-    @PutMapping("/user/{id}")
+    @PutMapping("/api/user/")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public User updateUserInfo(@PathVariable long id,
-                               @ApiIgnore @AuthenticationPrincipal User user) throws UserService.UsersNotFoundException {
-        return userService.updateUserInfo(id,user);
+    public User updateUserInfo(@RequestBody User user,
+                               @ApiIgnore @RequestHeader("Authorization") String token) throws UserService.MyUserNotFoundException {
+        return userService.updateUserInfo(user, token);
+    }
+
+    @PostMapping("/api/user/login")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    public void login(@RequestBody LoginCredentials credentials){
+    }
+
+    @PostMapping("/api/user/register")
+    public HttpStatus register(@RequestBody RegisterCredentials registerCredentials){
+        return userService.register(registerCredentials);
     }
 
 }
