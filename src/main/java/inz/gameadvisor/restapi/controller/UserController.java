@@ -52,7 +52,8 @@ public class UserController {
     }
 
     @PostMapping("/api/user/register")
-    public HttpStatus register(@RequestBody RegisterCredentials registerCredentials){
+    @ApiResponse(responseCode = "409", description = "Conflict")
+    public User register(@RequestBody RegisterCredentials registerCredentials){
         return userService.register(registerCredentials);
     }
 

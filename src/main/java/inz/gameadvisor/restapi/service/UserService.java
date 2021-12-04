@@ -3,7 +3,9 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.model.RegisterCredentials;
 import inz.gameadvisor.restapi.model.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
+import javassist.bytecode.DuplicateMemberException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -76,22 +79,40 @@ public class UserService {
     }
 
     @PostMapping("/register")
-    public HttpStatus register(RegisterCredentials registerCredentials){
+    public User register(RegisterCredentials registerCredentials){
         User user = new User();
-        user.setEmail(registerCredentials.getEmail());
-        user.setUsername(registerCredentials.getUsername());
-        user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
-        user.setAvatarPath("img/defaultAvatar64x64.png");
-        user.setEnabled(true);
-        user.setRoles("ROLE_USER");
-        userRepository.save(user);
-        return HttpStatus.OK;
+
+        String username = registerCredentials.getUsername();
+        String email = registerCredentials.getEmail();
+
+        Query query = em.createNativeQuery("SELECT username,email FROM users WHERE username = ? AND email = ?")
+                .setParameter(1, username)
+                .setParameter(2, email);
+
+        List results = query.getResultList();
+        if(!results.isEmpty()){
+            throw new MyDataConflict("Data duplicated");
+        }
+        else{
+            user.setEmail(registerCredentials.getEmail());
+            user.setUsername(registerCredentials.getUsername());
+            user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
+            user.setAvatarPath("img/defaultAvatar64x64.png");
+            user.setEnabled(true);
+            user.setRoles("ROLE_USER");
+            return userRepository.save(user);
+        }
     }
 
-
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public class MyDataConflict extends DataIntegrityViolationException{
+        public MyDataConflict(String message){
+            super(message);
+        }
+    }
 
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    public class MyUserNotFoundException extends NoSuchElementException {
+    public static class MyUserNotFoundException extends NoSuchElementException {
         public MyUserNotFoundException(String message)
         {
             super(message);

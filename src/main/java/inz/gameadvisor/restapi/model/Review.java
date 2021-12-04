@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Setter
 @Getter
@@ -14,12 +15,16 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reviewID;
 
-    @ManyToOne
     @JoinColumn(name = "review_userID",referencedColumnName = "userID")
-    private User review_userID;
+    private long review_userID;
 
     private String content;
 
+    @Column(name = "createdAt")
+    private Date dateCreated;
+
+    @JoinColumn(name = "review_scoreID",referencedColumnName = "scoreID")
+    private long review_scoreID;
 
 
 }

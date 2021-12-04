@@ -2,6 +2,7 @@ package inz.gameadvisor.restapi.misc;
 
 import inz.gameadvisor.restapi.model.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
+import inz.gameadvisor.restapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,9 +19,18 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
 
-        user.orElseThrow(() -> new UsernameNotFoundException("Not found " + username));
+        Optional<User> user = null;
+
+        try{
+            user = userRepository.findByUsername(username);
+        }
+        catch(UsernameNotFoundException e)
+        {
+            throw new UserService.MyUserNotFoundException("User not found " + username);
+        }
+
+        //user.orElseThrow(() -> new UsernameNotFoundException("Not found " + username));
 
         return user.map(MyUserDetails::new).get();
     }
