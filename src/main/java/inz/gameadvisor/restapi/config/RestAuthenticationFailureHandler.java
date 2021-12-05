@@ -1,6 +1,5 @@
 package inz.gameadvisor.restapi.config;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -15,5 +14,6 @@ public class RestAuthenticationFailureHandler extends SimpleUrlAuthenticationFai
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write(HttpServletResponse.SC_NOT_FOUND);
     }
 }

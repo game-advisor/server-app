@@ -1,13 +1,10 @@
 package inz.gameadvisor.restapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.Set;
 
 
 @Entity
@@ -25,21 +22,21 @@ public class User {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private @JsonIgnore String password;
+    private  String password;
 
     @Column(columnDefinition = "varchar(16)",nullable = false)
     @NotNull
-    private @JsonIgnore boolean enabled;
+    private  boolean enabled;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private @JsonIgnore String email;
+    private String email;
 
     @Column(name= "avatarPath",columnDefinition = "varchar(255) default 'img/defaultAvatar64x64.png'",nullable = false)
     @NotNull
-    private @JsonIgnore String avatarPath;
+    private String avatarPath;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private @JsonIgnore String roles;
+    private String roles;
 }

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -25,7 +26,7 @@ public class MyUserDetailsService implements UserDetailsService {
         try{
             user = userRepository.findByUsername(username);
         }
-        catch(UsernameNotFoundException e)
+        catch(NoSuchElementException e)
         {
             throw new UserService.MyUserNotFoundException("User not found " + username);
         }

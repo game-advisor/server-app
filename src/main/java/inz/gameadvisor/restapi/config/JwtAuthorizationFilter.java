@@ -41,18 +41,15 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         } catch (TokenExpiredException e) {
             final String expiredMsg = e.getMessage();
             logger.warn(expiredMsg);
-
             final String msg = (expiredMsg != null) ? expiredMsg : "Unauthorized";
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, msg);
             return;
         }
         catch(NoSuchElementException e1)
         {
-            final String expiredMsg = e1.getMessage();
-            logger.warn(expiredMsg);
-
-            final String msg = (expiredMsg != null) ? expiredMsg : "Not found";
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
+            final String noSuchElementMSG = e1.getMessage();
+            final String msg = (noSuchElementMSG != null) ? noSuchElementMSG :  "Using token of non-existent user. Are you sure this is ok?";
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, msg);
             return;
         }
 

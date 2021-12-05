@@ -41,9 +41,9 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public User updateUserInfo(@RequestBody User user,
+    public void updateUserInfo(@RequestBody User user,
                                @ApiIgnore @RequestHeader("Authorization") String token) throws UserService.MyUserNotFoundException {
-        return userService.updateUserInfo(user, token);
+        userService.updateUserInfo(user, token);
     }
 
     @PostMapping("/api/user/login")
@@ -53,8 +53,8 @@ public class UserController {
 
     @PostMapping("/api/user/register")
     @ApiResponse(responseCode = "409", description = "Conflict")
-    public User register(@RequestBody RegisterCredentials registerCredentials){
-        return userService.register(registerCredentials);
+    public void register(@RequestBody RegisterCredentials registerCredentials){
+        userService.register(registerCredentials);
     }
 
 }
