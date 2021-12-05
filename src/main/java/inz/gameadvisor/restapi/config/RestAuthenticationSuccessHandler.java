@@ -35,7 +35,7 @@ public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        Query query = em.createNativeQuery("SELECT userID FROM users WHERE username = ?");
+        Query query = em.createNativeQuery("SELECT userID FROM users WHERE email = ?");
         query.setParameter(1,principal.getUsername());
         Integer userID = Integer.parseInt(query.getSingleResult().toString());
 
