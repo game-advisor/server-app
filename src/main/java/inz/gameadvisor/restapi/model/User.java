@@ -1,6 +1,5 @@
 package inz.gameadvisor.restapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Table(name = "users")
-public class Users {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long userID;
@@ -23,11 +22,11 @@ public class Users {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private @JsonIgnore String password;
+    private  String password;
 
     @Column(columnDefinition = "varchar(16)",nullable = false)
     @NotNull
-    private @JsonIgnore String enabled;
+    private  boolean enabled;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
@@ -36,4 +35,8 @@ public class Users {
     @Column(name= "avatarPath",columnDefinition = "varchar(255) default 'img/defaultAvatar64x64.png'",nullable = false)
     @NotNull
     private String avatarPath;
+
+    @Column(columnDefinition = "varchar(255)",nullable = false)
+    @NotNull
+    private String roles;
 }

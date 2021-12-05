@@ -13,6 +13,7 @@ import java.io.IOException;
 public class RestAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        super.onAuthenticationFailure(request, response, exception);
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write(HttpServletResponse.SC_NOT_FOUND);
     }
 }

@@ -37,16 +37,18 @@ public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
 
         Query query = em.createNativeQuery("SELECT userID FROM users WHERE username = ?");
         query.setParameter(1,principal.getUsername());
-
-        Object userID = query.getSingleResult();
-        String userID_S = userID.toString();
-
+        Integer userID = Integer.parseInt(query.getSingleResult().toString());
 
         String token = JWT.create()
                 .withSubject(principal.getUsername())
-                .withClaim("userID", userID_S)
+                .withClaim("userID", userID)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .sign(Algorithm.HMAC256(secret));
         response.addHeader("Authorization",token);
+        response.setContentType("application/json");
+        response.getWriter().write(
+                "{\"token\" : "
+                + "\"" + token + "\"}"
+        );
     }
 }
