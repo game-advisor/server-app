@@ -22,6 +22,11 @@ public class UsersService {
         return usersRepository.findById(id).orElseThrow(() -> new UsersNotFoundException("No such user"));
     }
 
+    @ResponseStatus(code = HttpStatus.FORBIDDEN)
+    public class UsersNotAllowedException extends IllegalAccessException{
+        public UsersNotAllowedException(String message){super(message);}
+    }
+
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     public class UsersNotFoundException extends NoSuchElementException {
         public UsersNotFoundException(String message)
