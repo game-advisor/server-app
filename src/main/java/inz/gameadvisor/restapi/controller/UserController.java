@@ -2,6 +2,7 @@ package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.model.LoginCredentials;
 import inz.gameadvisor.restapi.model.RegisterCredentials;
+import inz.gameadvisor.restapi.model.UpdateUser;
 import inz.gameadvisor.restapi.model.User;
 import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,13 +38,13 @@ public class UserController {
 
     @PutMapping("/api/user/")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public void updateUserInfo(@RequestBody User user,
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void updateUserInfo(@RequestBody UpdateUser updateUser,
                                @ApiIgnore @RequestHeader("Authorization") String token) throws UserService.MyUserNotFoundException {
-        userService.updateUserInfo(user, token);
+        userService.updateUserInfo(updateUser, token);
     }
 
     @PostMapping("/api/user/login")

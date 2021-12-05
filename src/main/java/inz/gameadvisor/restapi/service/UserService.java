@@ -1,6 +1,7 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.model.RegisterCredentials;
+import inz.gameadvisor.restapi.model.UpdateUser;
 import inz.gameadvisor.restapi.model.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import javassist.bytecode.DuplicateMemberException;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -33,24 +36,40 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new MyUserNotFoundException("No such user"));
     }
 
-    public void updateUserInfo(User user, String token) throws MyUserNotFoundException {
+    @Transactional
+    public void updateUserInfo(UpdateUser updateUser, String token) throws MyUserNotFoundException {
         //Retrieve userID from passed User object in Request Body
-        long userID = user.getUserID();
-
-        String username = "";
+        long userID = updateUser.getUpdateUserID();
 
         //Native query to search if user exists
-        Query query = em.createNativeQuery("SELECT username FROM users WHERE userID = ?")
+        Query query = em.createNativeQuery("SELECT email FROM users WHERE userID = ?")
                 .setParameter(1,userID);
 
         //Try catch to find out if users exists, throws custom
         //NotFound exception on failure and returns 404 code to the browser
         try
         {
-             username = query.getSingleResult().toString();
+             query.getSingleResult().toString();
         }
         catch (NoResultException e) {
             throw new MyUserNotFoundException("User not found");
+        }
+
+        String password = updateUser.getPassword();
+        String username = updateUser.getUsername();
+
+        if(!password.equals("")){
+            password = passwordEncoder.encode(password);
+            Query query1 = em.createNativeQuery("UPDATE users SET password = ? WHERE userID = ?")
+                    .setParameter(1, password)
+                    .setParameter(2, userID);
+            query1.executeUpdate();
+        }
+        if(!username.equals("")){
+            Query query1 = em.createNativeQuery("UPDATE users SET username = ? WHERE userID = ?")
+                    .setParameter(1, username)
+                    .setParameter(2, userID);
+            query1.executeUpdate();
         }
 
 //        //If try catch passes, select all user info from the table
