@@ -1,5 +1,4 @@
-package inz.gameadvisor.restapi.model;
-
+package inz.gameadvisor.restapi.model.deviceOriented;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,11 +8,11 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "gpu")
-public class GPU {
+@Table(name = "cpu")
+public class CPU {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long gpuID;
+    private long cpuID;
 
     private String name;
 

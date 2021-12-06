@@ -1,6 +1,6 @@
 package inz.gameadvisor.restapi.misc;
 
-import inz.gameadvisor.restapi.model.User;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import inz.gameadvisor.restapi.service.UserService;
 import lombok.RequiredArgsConstructor;
