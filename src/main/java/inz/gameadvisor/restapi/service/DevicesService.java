@@ -46,23 +46,13 @@ public class DevicesService {
 
         long userID = getUserIDFromToken(token);
 
-        Devices createdDevice = new Devices();
 
-        createdDevice.setShortName(device.getShortName());
-        createdDevice.setCpuID(device.getCpuID());
-        createdDevice.setGpuID(device.getGpuID());
-        createdDevice.setRamID(device.getRamID());
-        createdDevice.setOsID(device.getOsID());
-        createdDevice.setHDD(device.isHDD());
-        createdDevice.setSSD(device.isSSD());
-        createdDevice.setUserID(userID);
-
-        try {
-            devicesRepository.save(createdDevice);
-        }
-        catch (Exception e){
-            throw new CustomRepsonses.MyDataConflict("Constraint failed");
-        }
+//        try {
+//            devicesRepository.save(createdDevice);
+//        }
+//        catch (Exception e){
+//            throw new CustomRepsonses.MyDataConflict("Constraint failed");
+//        }
 
     }
 

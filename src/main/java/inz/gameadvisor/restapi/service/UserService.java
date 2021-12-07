@@ -7,6 +7,7 @@ import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -32,14 +34,18 @@ public class UserService {
         String password = updateUser.getPassword();
         String username = updateUser.getUsername();
 
-        if (!password.equals("")) {
+        if(Objects.isNull(password) || Objects.isNull(username)) {
+            throw new CustomRepsonses.MyBadRequestException("Yoooooo");
+        }
+
+        if (!password.isBlank()) {
             password = passwordEncoder.encode(password);
             Query query1 = em.createNativeQuery("UPDATE users SET password = ? WHERE userID = ?")
                     .setParameter(1, password)
                     .setParameter(2, userID);
             query1.executeUpdate();
         }
-        if (!username.equals("")) {
+        if (!username.isBlank()) {
             Query query1 = em.createNativeQuery("UPDATE users SET username = ? WHERE userID = ?")
                     .setParameter(1, username)
                     .setParameter(2, userID);
@@ -49,24 +55,25 @@ public class UserService {
 
     public void register(RegisterCredentials registerCredentials) {
         User user = new User();
-        String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+        String regex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
+                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
         String username = registerCredentials.getUsername();
         String email = registerCredentials.getEmail();
+        if(Objects.isNull(email) || Objects.isNull(username))
+        {
+            throw new CustomRepsonses.MyBadRequestException("Yoooooo");
+        }
         if (username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32) {
             throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
         } else {
             if (!checkEmailValidity(email, regex)) {
                 throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
             } else {
-                Query emailQuery = em.createNativeQuery("SELECT email FROM users WHERE email = ?")
-                        .setParameter(1, email);
-
-                Query usernameQuery = em.createNativeQuery("SELECT username FROM users WHERE username = ?")
-                        .setParameter(1, username);
-
-                List results = usernameQuery.getResultList();
+                Query emailQuery = em.createNativeQuery("SELECT email,username FROM users WHERE email = ? OR username = ?")
+                        .setParameter(1, email)
+                        .setParameter(2, username);
                 List results1 = emailQuery.getResultList();
-                if (!results.isEmpty() || !results1.isEmpty()) {
+                if (!results1.isEmpty()) {
                     throw new CustomRepsonses.MyDataConflict("Data duplicated");
                 } else {
                     user.setEmail(registerCredentials.getEmail());

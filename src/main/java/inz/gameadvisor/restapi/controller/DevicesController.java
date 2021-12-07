@@ -21,7 +21,6 @@ public class DevicesController {
 
     private final DevicesService devicesService;
 
-
     @GetMapping("/api/device/user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),

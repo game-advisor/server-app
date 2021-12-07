@@ -29,4 +29,9 @@ public class CustomRepsonses {
             super(message);
         }
     }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    public static class MyBadRequestException extends NullPointerException{
+        public MyBadRequestException(String message){super(message);}
+    }
 }

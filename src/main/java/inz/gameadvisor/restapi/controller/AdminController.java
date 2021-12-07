@@ -2,6 +2,8 @@ package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.Score;
+import inz.gameadvisor.restapi.model.deviceOriented.AddCPU;
+import inz.gameadvisor.restapi.model.deviceOriented.CPU;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.service.AdminService;
@@ -40,6 +42,7 @@ public class AdminController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "No devices found")
     })
+    @ResponseStatus(code = HttpStatus.OK)
     public ResponseEntity<List<Devices>> getAllDevicesList(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -58,4 +61,30 @@ public class AdminController {
     public List<Score> getAllScores(){
         return adminService.getAllScores();
     }
+
+    @PostMapping("/api/admin/devices/cpu/add")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No devices found")
+    })
+    @ResponseStatus(code = HttpStatus.OK)
+    public void addCPU(@RequestBody AddCPU cpuAdded,
+            @ApiIgnore @RequestHeader("Authorization") String token){
+        adminService.addCPU(cpuAdded,token);
+    }
+
+    @PutMapping("/api/admin/devices/cpu/{id}/edit")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No devices found")
+    })
+    public CPU editCPU(@PathVariable long id,
+                       @RequestBody CPU editCPU,
+                       @ApiIgnore @RequestHeader("Authorization") String token){
+        return adminService.editCPU(id, editCPU, token);
+    }
+
+
 }

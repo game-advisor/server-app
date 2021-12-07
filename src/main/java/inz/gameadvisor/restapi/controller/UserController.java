@@ -23,7 +23,7 @@ public class UserController {
     @Value("${jwt.secret")
     private String secret;
 
-    @PutMapping("/api/user/")
+    @PutMapping("/api/user/edit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")

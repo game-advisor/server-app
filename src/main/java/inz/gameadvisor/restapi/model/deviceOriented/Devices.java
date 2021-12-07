@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.model.deviceOriented;
 
+import inz.gameadvisor.restapi.model.userOriented.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,18 +17,27 @@ public class Devices {
 
     private String shortName;
 
-    private long cpuID;
+    @ManyToOne
+    @JoinColumn(name = "cpuID", referencedColumnName = "cpuID")
+    private CPU cpu;
 
-    private long gpuID;
+    @ManyToOne
+    @JoinColumn(name = "gpuID", referencedColumnName = "gpuID")
+    private GPU gpu;
 
-    private long ramID;
+    @ManyToOne
+    @JoinColumn(name = "ramID", referencedColumnName = "ramID")
+    private RAM ram;
 
-    private long osID;
+    @ManyToOne
+    @JoinColumn(name = "osID", referencedColumnName = "osID")
+    private OS os;
 
     private boolean isHDD;
 
     private boolean isSSD;
 
+    @ManyToOne
     @JoinColumn(name="userID", referencedColumnName = "userID")
-    private long userID;
+    private User userID;
 }
