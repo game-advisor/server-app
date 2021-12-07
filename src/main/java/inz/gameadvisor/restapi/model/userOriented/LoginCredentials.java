@@ -1,12 +1,12 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.userOriented;
+
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterCredentials {
-    private String username;
+public class LoginCredentials {
     private String email;
     private String password;
 }

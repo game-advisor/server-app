@@ -1,9 +1,13 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.model.Score;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
-import inz.gameadvisor.restapi.model.deviceOriented.DevicesUpdated;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.DevicesRepository;
+import inz.gameadvisor.restapi.repository.ReviewRepository;
+import inz.gameadvisor.restapi.repository.ScoreRepository;
+import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -21,65 +25,59 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DevicesService {
+public class AdminService {
 
+    private final UserRepository userRepository;
     private final DevicesRepository devicesRepository;
+    private final ReviewRepository reviewRepository;
+    private final ScoreRepository scoreRepository;
 
     @PersistenceContext
     EntityManager em;
 
-    public List<Devices> getDevicesByCurrentUserID(String token){
-
+    @SneakyThrows
+    public User getUserInfo(long id, String token) throws CustomRepsonses.MyNotFoundException {
         long userID = getUserIDFromToken(token);
 
-        List<Devices> result = devicesRepository.findDevicesByuserID(userID);
-
-        if(result.isEmpty()){
-            throw new CustomRepsonses.MyNotFoundException("Not found");
+        boolean userRole = isUserAnAdmin("ROLE_ADMIN", userID);
+        if(userRole){
+            return userRepository.findById(id).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("No such user"));
         }
         else{
-            return result;
+            throw new CustomRepsonses.MyForbiddenAccess("You are not an admin");
         }
     }
 
-    public void createDevice(DevicesUpdated device, String token){
-
+    @SneakyThrows
+    public List<Devices> getAllDevicesList(Integer pageNumber, Integer pageSize, String sortBy, String token){
+        String roleFromToken = getUserRoleFromToken(token);
         long userID = getUserIDFromToken(token);
 
-        Devices createdDevice = new Devices();
+        boolean userRole = isUserAnAdmin("ROLE_ADMIN",userID);
 
-        createdDevice.setShortName(device.getShortName());
-        createdDevice.setCpuID(device.getCpuID());
-        createdDevice.setGpuID(device.getGpuID());
-        createdDevice.setRamID(device.getRamID());
-        createdDevice.setOsID(device.getOsID());
-        createdDevice.setHDD(device.isHDD());
-        createdDevice.setSSD(device.isSSD());
-        createdDevice.setUserID(userID);
+        if(userRole){
+            System.out.println("User is an admin");
+            Pageable paging = PageRequest.of(pageNumber,pageSize, Sort.by(sortBy));
 
-        try {
-            devicesRepository.save(createdDevice);
+            Page<Devices> pagedResult = devicesRepository.findAll(paging);
+
+            if(!pagedResult.hasContent()){
+                throw new CustomRepsonses.MyNotFoundException("Not found");
+            }
+            else{
+                return pagedResult.getContent();
+            }
         }
-        catch (Exception e){
-            throw new CustomRepsonses.MyDataConflict("Constraint failed");
+        else{
+            throw new CustomRepsonses.MyForbiddenAccess("You are not an admin");
         }
-
     }
 
-    public void deleteDevice(long id, String token){
-        long userID = getUserIDFromToken(token);
-
-        List<Devices> device = devicesRepository.findDevicesByuserID(userID);
-
-        int indexOfDeviceToDelete = (int) id;
-
-        try{
-            device.remove(indexOfDeviceToDelete);
-        }
-        catch (Exception e){
-            throw new CustomRepsonses.MyDataConflict("Failed to remove device");
-        }
-
+    public List<Score> getAllScores(){
+        if(scoreRepository.findAll().isEmpty())
+            throw new CustomRepsonses.MyNotFoundException("No elements found");
+        else
+            return scoreRepository.findAll();
     }
 
     public JSONObject getBodyFromToken(String token){

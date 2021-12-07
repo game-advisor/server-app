@@ -1,6 +1,6 @@
 package inz.gameadvisor.restapi.misc;
 
-import inz.gameadvisor.restapi.model.User;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

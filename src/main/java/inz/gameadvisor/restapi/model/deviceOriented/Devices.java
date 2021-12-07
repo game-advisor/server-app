@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.deviceOriented;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +28,6 @@ public class Devices {
 
     private boolean isSSD;
 
-    @JoinColumn(name="devices_userID", referencedColumnName = "userID")
+    @JoinColumn(name="userID", referencedColumnName = "userID")
     private long userID;
 }

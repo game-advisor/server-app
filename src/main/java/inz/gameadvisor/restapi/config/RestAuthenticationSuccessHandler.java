@@ -35,13 +35,18 @@ public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        Query query = em.createNativeQuery("SELECT userID FROM users WHERE email = ?");
-        query.setParameter(1,principal.getUsername());
+        Query query = em.createNativeQuery("SELECT userID FROM users WHERE email = ?")
+                .setParameter(1,principal.getUsername());
         Integer userID = Integer.parseInt(query.getSingleResult().toString());
+
+        Query query1 = em.createNativeQuery("SELECT roles FROM users WHERE userID = ?")
+                .setParameter(1, userID);
+        String roles = query1.getSingleResult().toString();
 
         String token = JWT.create()
                 .withSubject(principal.getUsername())
                 .withClaim("userID", userID)
+                .withClaim("roles", roles)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .sign(Algorithm.HMAC256(secret));
         response.addHeader("Authorization",token);

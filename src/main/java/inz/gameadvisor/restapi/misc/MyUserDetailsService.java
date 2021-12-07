@@ -1,6 +1,6 @@
 package inz.gameadvisor.restapi.misc;
 
-import inz.gameadvisor.restapi.model.User;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import inz.gameadvisor.restapi.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +26,9 @@ public class MyUserDetailsService implements UserDetailsService {
         try{
             user = userRepository.findByEmail(email);
         }
-        catch(NoSuchElementException e)
+        catch(UsernameNotFoundException e)
         {
-            throw new UserService.MyUserNotFoundException("User not found " + email);
+            throw new CustomRepsonses.MyNotFoundException("User not found " + email);
         }
 
         //user.orElseThrow(() -> new UsernameNotFoundException("Not found " + username));

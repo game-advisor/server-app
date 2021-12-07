@@ -19,23 +19,13 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/api/review/")
+    @GetMapping("/api/reviews/")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Reviews not found")
     })
-    public List<Review> getAllReviews(){
+    public List<Review> getAllReviews() {
         return reviewService.getAllReviews();
-    }
-
-    @GetMapping("/api/score/")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Not found")
-    })
-    public List<Score> getAllScores(){
-        return reviewService.getAllScores();
     }
 }

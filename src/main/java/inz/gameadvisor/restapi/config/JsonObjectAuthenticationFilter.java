@@ -1,12 +1,12 @@
 package inz.gameadvisor.restapi.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import inz.gameadvisor.restapi.model.LoginCredentials;
-import org.springframework.security.authentication.BadCredentialsException;
+import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.model.userOriented.LoginCredentials;
+import lombok.SneakyThrows;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -33,9 +33,12 @@ public class JsonObjectAuthenticationFilter extends UsernamePasswordAuthenticati
                 sb.append(line);
             }
             LoginCredentials authRequest = objectMapper.readValue(sb.toString(), LoginCredentials.class);
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    authRequest.getEmail(), authRequest.getPassword()
-            );
+            String email = authRequest.getEmail();
+            String password = authRequest.getPassword();
+            UsernamePasswordAuthenticationToken token =
+                    new UsernamePasswordAuthenticationToken(
+                            email,
+                            password);
             setDetails(request, token);
             return this.getAuthenticationManager().authenticate(token);
         }

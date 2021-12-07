@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.userOriented;
 
 import com.sun.istack.NotNull;
 import lombok.Getter;

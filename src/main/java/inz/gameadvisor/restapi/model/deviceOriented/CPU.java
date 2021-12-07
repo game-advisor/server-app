@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.deviceOriented;
 
 import lombok.Getter;
 import lombok.Setter;

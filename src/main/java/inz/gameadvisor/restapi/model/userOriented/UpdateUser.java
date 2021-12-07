@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.userOriented;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,9 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateUser {
-    private long updateUserID;
-
     private String username;
-
     private String password;
 }

@@ -1,25 +1,19 @@
 package inz.gameadvisor.restapi.service;
 
-import inz.gameadvisor.restapi.model.RegisterCredentials;
-import inz.gameadvisor.restapi.model.UpdateUser;
-import inz.gameadvisor.restapi.model.User;
+import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
+import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
-import javassist.bytecode.DuplicateMemberException;
-import javassist.tools.web.BadHttpRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -32,81 +26,38 @@ public class UserService {
     @PersistenceContext
     EntityManager em;
 
-    public User getUserInfo(long id, String token) throws MyUserNotFoundException {
-        return userRepository.findById(id).orElseThrow(() -> new MyUserNotFoundException("No such user"));
-    }
-
     @Transactional
-    public void updateUserInfo(UpdateUser updateUser, String token) throws MyUserNotFoundException {
-        //Retrieve userID from passed User object in Request Body
-        long userID = updateUser.getUpdateUserID();
-
-        //Native query to search if user exists
-        Query query = em.createNativeQuery("SELECT email FROM users WHERE userID = ?")
-                .setParameter(1,userID);
-
-        //Try catch to find out if users exists, throws custom
-        //NotFound exception on failure and returns 404 code to the browser
-        try
-        {
-             query.getSingleResult().toString();
-        }
-        catch (NoResultException e) {
-            throw new MyUserNotFoundException("User not found");
-        }
-
+    public void updateUserInfo(UpdateUser updateUser, String token) throws CustomRepsonses.MyNotFoundException {
+        long userID = getUserIDFromToken(token);
         String password = updateUser.getPassword();
         String username = updateUser.getUsername();
 
-        if(!password.equals("")){
+        if (!password.equals("")) {
             password = passwordEncoder.encode(password);
             Query query1 = em.createNativeQuery("UPDATE users SET password = ? WHERE userID = ?")
                     .setParameter(1, password)
                     .setParameter(2, userID);
             query1.executeUpdate();
         }
-        if(!username.equals("")){
+        if (!username.equals("")) {
             Query query1 = em.createNativeQuery("UPDATE users SET username = ? WHERE userID = ?")
                     .setParameter(1, username)
                     .setParameter(2, userID);
             query1.executeUpdate();
         }
-
-//        //If try catch passes, select all user info from the table
-//        Query query1 = em.createNativeQuery("SELECT * FROM users WHERE userID = ?", User.class)
-//                .setParameter(1,userID);
-//
-//        User user1 = (User) query1.getSingleResult();
-//
-//        User updatedUser = new User();
-//
-//        System.out.println(user1.getUserID() + " " + user1.getUsername()  + " " +  user1.getPassword()  + " " +  user1.getEnabled()  + " " +  user1.getEmail()  + " " +  user1.getAvatarPath()  + " " +  user1.getAuthorityID());
-//
-//        if(user.getUsername() != "")
-//            updatedUser.setUsername(user.getUsername());
-//
-//
-//        String usrname = user1.getUsername();
-//        String password = user1.getPassword();
-//        String enabled = user1.getEnabled();
-//        String email = user1.getEmail();
-//        String avatarPath = user1.getAvatarPath();
-//        long authorityID = user1.getAuthorityID();
     }
 
-    public void register(RegisterCredentials registerCredentials){
+    public void register(RegisterCredentials registerCredentials) {
         User user = new User();
         String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
         String username = registerCredentials.getUsername();
         String email = registerCredentials.getEmail();
-        if(username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32){
-            throw new MyDataConflict("Something in your body payload is wrong");
-        }
-        else{
-            if(!checkEmailValidity(email, regex)){
-                throw new MyDataConflict("Something in your body payload is wrong");
-            }
-            else{
+        if (username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32) {
+            throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
+        } else {
+            if (!checkEmailValidity(email, regex)) {
+                throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
+            } else {
                 Query emailQuery = em.createNativeQuery("SELECT email FROM users WHERE email = ?")
                         .setParameter(1, email);
 
@@ -115,10 +66,9 @@ public class UserService {
 
                 List results = usernameQuery.getResultList();
                 List results1 = emailQuery.getResultList();
-                if(!results.isEmpty() || !results1.isEmpty()){
-                    throw new MyDataConflict("Data duplicated");
-                }
-                else{
+                if (!results.isEmpty() || !results1.isEmpty()) {
+                    throw new CustomRepsonses.MyDataConflict("Data duplicated");
+                } else {
                     user.setEmail(registerCredentials.getEmail());
                     user.setUsername(registerCredentials.getUsername());
                     user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
@@ -131,26 +81,24 @@ public class UserService {
         }
     }
 
-    public static boolean checkEmailValidity(String emailAddr, String regexPattern){
+    public static boolean checkEmailValidity(String emailAddress, String regexPattern) {
         return Pattern.compile(regexPattern)
-                .matcher(emailAddr)
+                .matcher(emailAddress)
                 .matches();
     }
 
-    @ResponseStatus(value = HttpStatus.CONFLICT)
-    public class MyDataConflict extends DataIntegrityViolationException{
-        public MyDataConflict(String message){
-            super(message);
-        }
+    public long getUserIDFromToken(String token) {
+        String[] splitString = token.split("\\.");
+        String base64EncodedBody = splitString[1];
+        Base64 base64Url = new Base64(true);
+
+        String body = new String(base64Url.decode(base64EncodedBody));
+        JSONObject tokenBody = new JSONObject(body);
+        long userID = Long.parseLong(tokenBody.get("userID").toString());
+
+        return userID;
     }
 
-    @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    public static class MyUserNotFoundException extends NoSuchElementException {
-        public MyUserNotFoundException(String message)
-        {
-            super(message);
-        }
-    }
 }
 
 
