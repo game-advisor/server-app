@@ -57,7 +57,6 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("GameAdvisor REST API Documentation")
                 .description("work in progress")
-                .termsOfServiceUrl("localhost/tos")
                 .version("1.0")
                 .build();
     }

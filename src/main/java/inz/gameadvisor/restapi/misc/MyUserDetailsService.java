@@ -26,9 +26,9 @@ public class MyUserDetailsService implements UserDetailsService {
         try{
             user = userRepository.findByEmail(email);
         }
-        catch(NoSuchElementException e)
+        catch(UsernameNotFoundException e)
         {
-            throw new UserService.MyUserNotFoundException("User not found " + email);
+            throw new CustomRepsonses.MyNotFoundException("User not found " + email);
         }
 
         //user.orElseThrow(() -> new UsernameNotFoundException("Not found " + username));

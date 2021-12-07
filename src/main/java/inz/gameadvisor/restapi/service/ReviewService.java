@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.service;
 
+import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.Review;
 import inz.gameadvisor.restapi.model.Score;
 import inz.gameadvisor.restapi.repository.ReviewRepository;
@@ -17,16 +18,8 @@ public class ReviewService {
 
     public List<Review> getAllReviews(){
         if(reviewRepository.findAll().isEmpty())
-            throw new UserService.MyUserNotFoundException("No elements found");
+            throw new CustomRepsonses.MyNotFoundException("No elements found");
         else
             return reviewRepository.findAll();
     }
-
-    public List<Score> getAllScores(){
-        if(scoreRepository.findAll().isEmpty())
-            throw new UserService.MyUserNotFoundException("No elements found");
-        else
-            return scoreRepository.findAll();
-    }
-
 }

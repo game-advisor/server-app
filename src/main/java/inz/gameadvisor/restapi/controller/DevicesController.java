@@ -21,20 +21,6 @@ public class DevicesController {
 
     private final DevicesService devicesService;
 
-    @GetMapping("/api/device/admin")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "404", description = "No devices found")
-    })
-    public ResponseEntity<List<Devices>> getAllDevicesList(
-            @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(defaultValue = "deviceID") String sortBy,
-            @ApiIgnore @RequestHeader("Authorization") String token){
-        List<Devices> list = devicesService.getAllDevicesList(pageNumber,pageSize,sortBy,token);
-        return new ResponseEntity<List<Devices>>(list, new HttpHeaders(), HttpStatus.OK);
-    }
 
     @GetMapping("/api/device/user")
     @ApiResponses(value = {
@@ -51,8 +37,20 @@ public class DevicesController {
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void createNewDevice(@RequestBody DevicesUpdated device,
+    public void createDevice(@RequestBody DevicesUpdated device,
                                 @ApiIgnore @RequestHeader("Authorization") String token){
-        devicesService.createNewDevice(device, token);
+        devicesService.createDevice(device, token);
+    }
+
+    @DeleteMapping("/api/device/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "409", description = "Conflict")
+    })
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void deleteDevice(@RequestParam long id,
+                             @ApiIgnore @RequestHeader("Authorization") String token){
+        devicesService.deleteDevice(id,token);
     }
 }
