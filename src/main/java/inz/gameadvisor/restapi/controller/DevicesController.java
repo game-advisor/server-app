@@ -48,7 +48,7 @@ public class DevicesController {
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteDevice(@RequestParam long id,
+    public void deleteDevice(@PathVariable long id,
                              @ApiIgnore @RequestHeader("Authorization") String token){
         devicesService.deleteDevice(id,token);
     }

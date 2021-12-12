@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AddCPU {
+public class EditAddCPU {
     private String name;
     private long manufID;
     private String series;

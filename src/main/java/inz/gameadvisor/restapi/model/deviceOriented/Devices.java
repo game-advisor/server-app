@@ -39,5 +39,5 @@ public class Devices {
 
     @ManyToOne
     @JoinColumn(name="userID", referencedColumnName = "userID")
-    private User userID;
+    private User user;
 }

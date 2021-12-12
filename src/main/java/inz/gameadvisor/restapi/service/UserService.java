@@ -29,7 +29,7 @@ public class UserService {
     EntityManager em;
 
     @Transactional
-    public void updateUserInfo(UpdateUser updateUser, String token) throws CustomRepsonses.MyNotFoundException {
+    public void editUserInfo(UpdateUser updateUser, String token) throws CustomRepsonses.MyNotFoundException {
         long userID = getUserIDFromToken(token);
         String password = updateUser.getPassword();
         String username = updateUser.getUsername();
@@ -55,8 +55,8 @@ public class UserService {
 
     public void register(RegisterCredentials registerCredentials) {
         User user = new User();
-        String regex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+        String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
+                + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
         String username = registerCredentials.getUsername();
         String email = registerCredentials.getEmail();
         if(Objects.isNull(email) || Objects.isNull(username))
@@ -64,10 +64,10 @@ public class UserService {
             throw new CustomRepsonses.MyBadRequestException("Yoooooo");
         }
         if (username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32) {
-            throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
+            throw new CustomRepsonses.MyDataConflict("Data too long");
         } else {
             if (!checkEmailValidity(email, regex)) {
-                throw new CustomRepsonses.MyDataConflict("Something in your body payload is wrong");
+                throw new CustomRepsonses.MyDataConflict("Mail did not fit regex");
             } else {
                 Query emailQuery = em.createNativeQuery("SELECT email,username FROM users WHERE email = ? OR username = ?")
                         .setParameter(1, email)

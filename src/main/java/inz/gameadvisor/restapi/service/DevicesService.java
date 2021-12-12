@@ -3,6 +3,7 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
 import inz.gameadvisor.restapi.model.deviceOriented.DevicesUpdated;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.DevicesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -32,7 +33,11 @@ public class DevicesService {
 
         long userID = getUserIDFromToken(token);
 
-        List<Devices> result = devicesRepository.findDevicesByuserID(userID);
+        User user = new User();
+
+        user.setUserID(userID);
+
+        List<Devices> result = devicesRepository.findDevicesByUser(user);
 
         if(result.isEmpty()){
             throw new CustomRepsonses.MyNotFoundException("Not found");
@@ -59,7 +64,11 @@ public class DevicesService {
     public void deleteDevice(long id, String token){
         long userID = getUserIDFromToken(token);
 
-        List<Devices> device = devicesRepository.findDevicesByuserID(userID);
+        User user = new User();
+
+        user.setUserID(userID);
+
+        List<Devices> device = devicesRepository.findDevicesByUser(user);
 
         int indexOfDeviceToDelete = (int) id;
 

@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.reviewOriented;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,15 +16,17 @@ public class Review {
     private long reviewID;
 
     @JoinColumn(name = "review_userID",referencedColumnName = "userID")
-    private long review_userID;
+    private long reviewUserID;
 
     private String content;
 
     @Column(name = "createdAt")
     private Date dateCreated;
 
-    @JoinColumn(name = "review_scoreID",referencedColumnName = "scoreID")
-    private long review_scoreID;
+    @JoinColumn(name = "reviewScoreID",referencedColumnName = "scoreID")
+    private long reviewScoreID;
 
+    @JoinColumn(name = "gameID", referencedColumnName = "gameID")
+    private long gameID;
 
 }

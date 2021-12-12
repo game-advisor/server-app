@@ -31,11 +31,12 @@ public class UserController {
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void updateUserInfo(@RequestBody UpdateUser updateUser,
                                @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
-        userService.updateUserInfo(updateUser, token);
+        userService.editUserInfo(updateUser, token);
     }
 
     @PostMapping("/api/user/login")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @ResponseStatus(code = HttpStatus.OK)
     public void login(@RequestBody LoginCredentials credentials){
     }
 

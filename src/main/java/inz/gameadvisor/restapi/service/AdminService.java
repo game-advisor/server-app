@@ -1,8 +1,9 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
-import inz.gameadvisor.restapi.model.Score;
-import inz.gameadvisor.restapi.model.deviceOriented.AddCPU;
+import inz.gameadvisor.restapi.model.Companies;
+import inz.gameadvisor.restapi.model.reviewOriented.Score;
+import inz.gameadvisor.restapi.model.deviceOriented.EditAddCPU;
 import inz.gameadvisor.restapi.model.deviceOriented.CPU;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
 import inz.gameadvisor.restapi.model.userOriented.User;
@@ -11,20 +12,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +36,12 @@ public class AdminService {
     private final ReviewRepository reviewRepository;
     private final ScoreRepository scoreRepository;
     private final CPURepository cpuRepository;
+    private final CompaniesRepository companiesRepository;
 
     @PersistenceContext
     EntityManager em;
 
+    //User part of AdMiN panel
     @SneakyThrows
     public User getUserInfo(long id, String token) throws CustomRepsonses.MyNotFoundException {
         long userID = getUserIDFromToken(token);
@@ -51,6 +54,28 @@ public class AdminService {
         }
     }
 
+    @SneakyThrows
+    public List<User> getAllUsersList(Integer pageNumber, Integer pageSize, String sortBy, String token){
+        long userID = getUserIDFromToken(token);
+
+        if(isUserAnAdmin(userID)){
+            Pageable paging = PageRequest.of(pageNumber,pageSize, Sort.by(sortBy));
+
+            Page<User> pagedResult = userRepository.findAll(paging);
+
+            if(!pagedResult.hasContent()){
+                throw new CustomRepsonses.MyNotFoundException("Not found");
+            }
+            else{
+                return pagedResult.getContent();
+            }
+        }
+        else{
+            throw new CustomRepsonses.MyForbiddenAccess("You are not an admin");
+        }
+    }
+
+    //Devices part of AdMiN panel
     @SneakyThrows
     public List<Devices> getAllDevicesList(Integer pageNumber, Integer pageSize, String sortBy, String token){
         long userID = getUserIDFromToken(token);
@@ -72,39 +97,54 @@ public class AdminService {
         }
     }
 
-    public List<Score> getAllScores(){
-        if(scoreRepository.findAll().isEmpty())
-            throw new CustomRepsonses.MyNotFoundException("No elements found");
-        else
-            return scoreRepository.findAll();
-    }
-
     @SneakyThrows
-    public void addCPU(AddCPU cpuAdded, String token) {
+    public void addCPU(EditAddCPU cpuAdded, String token) {
         long userID = getUserIDFromToken(token);
 
         if(isUserAnAdmin(userID)){
             CPU addCPU = new CPU();
+
+            Companies company = companiesRepository.findById(cpuAdded.getManufID()).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("No such company"));
 
             addCPU.setName(cpuAdded.getName());
             addCPU.setManufID(cpuAdded.getManufID());
             addCPU.setSeries(cpuAdded.getSeries());
             addCPU.setScore(cpuAdded.getScore());
 
-            cpuRepository.save(addCPU);
+            try{
+                cpuRepository.save(addCPU);
+            }
+            catch (DataIntegrityViolationException e){
+                throw new CustomRepsonses.MyDataConflict("Duplicated data");
+            }
         }
-        else
-        {
+        else {
             throw new CustomRepsonses.MyForbiddenAccess("User of id " + userID + " tried to access resource while not being an admin!");
         }
     }
 
-    public CPU editCPU(long id, CPU editCPU, String token){
+    @SneakyThrows
+    @Transactional
+    public void editCPU(long id, EditAddCPU editCPU, String token){
 
-        long cpuID = id;
+        long userID = getUserIDFromToken(token);
 
+        if(isUserAnAdmin(userID))
+        {
+            long cpuID = id;
 
-        return null;
+            String name = editCPU.getName();
+            String series = editCPU.getSeries();
+            long manufID = editCPU.getManufID();
+            int score = editCPU.getScore();
+
+            //if(!name.isBlank())
+
+            //Query query = em.createNativeQuery("UPDATE cpu SET password = ? WHERE userID = ?")
+        }
+        else{
+            throw new CustomRepsonses.MyForbiddenAccess("User of id " + userID + " tried to access resource while not being an admin!");
+        }
     }
 
 
