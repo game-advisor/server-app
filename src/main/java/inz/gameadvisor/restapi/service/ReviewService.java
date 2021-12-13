@@ -55,7 +55,6 @@ public class ReviewService {
         review.setContent(addReview.getContent());
         review.setReviewScoreID(score.getScoreID());
         long currentDateTime = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         Date resultDate = new Date(currentDateTime);
         review.setDateCreated(resultDate);
 

@@ -8,9 +8,12 @@ import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -32,6 +35,16 @@ public class UserController {
     public void updateUserInfo(@RequestBody UpdateUser updateUser,
                                @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
         userService.editUserInfo(updateUser, token);
+    }
+
+    @GetMapping("/api/user/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<Object> getUserInfo(@PathVariable("id") long id,
+                                      @ApiIgnore @RequestHeader("Authorization") String token){
+        return userService.getUserInfo(id, token);
     }
 
     @PostMapping("/api/user/login")

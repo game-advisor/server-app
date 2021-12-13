@@ -8,12 +8,17 @@ import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -88,24 +93,79 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<Object> getUserInfo(long id, String token){
+        long userIDToken = getUserIDFromToken(token);
+
+        LinkedHashMap<String, String> jsonOrderedMap = new LinkedHashMap<String, String>();
+
+        JSONObject userJ = new JSONObject(jsonOrderedMap);
+
+        User userU = userRepository.findById(id).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("User of ID: " + id + " not found."));
+        if(userIDToken == id){
+            if(isUserAnAdmin(userIDToken)) {
+                userJ.put("userID",userU.getUserID());
+                userJ.put("username", userU.getUsername());
+                userJ.put("password", userU.getPassword());
+                userJ.put("enabled", userU.isEnabled());
+                userJ.put("email", userU.getEmail());
+                userJ.put("avatarPath", userU.getAvatarPath());
+                userJ.put("roles", userU.getRoles());
+            }
+            else {
+                userJ.put("userID",userU.getUserID());
+                userJ.put("username", userU.getUsername());
+                userJ.put("email", userU.getEmail());
+                userJ.put("avatarPath", userU.getAvatarPath());
+            }
+            return new ResponseEntity<>(userJ.toMap(), HttpStatus.OK);
+        }
+        else{
+            if(isUserAnAdmin(userIDToken)) {
+                userJ.put("userID",userU.getUserID());
+                userJ.put("username", userU.getUsername());
+                userJ.put("password", userU.getPassword());
+                userJ.put("enabled", userU.isEnabled());
+                userJ.put("email", userU.getEmail());
+                userJ.put("avatarPath", userU.getAvatarPath());
+                userJ.put("roles", userU.getRoles());
+            }
+            else{
+                userJ.put("username", userU.getUsername());
+                userJ.put("avatarPath", userU.getAvatarPath());
+            }
+            return new ResponseEntity<>(userJ.toMap(), HttpStatus.OK);
+        }
+    }
+
     public static boolean checkEmailValidity(String emailAddress, String regexPattern) {
         return Pattern.compile(regexPattern)
                 .matcher(emailAddress)
                 .matches();
     }
 
-    public long getUserIDFromToken(String token) {
+    public JSONObject getBodyFromToken(String token){
         String[] splitString = token.split("\\.");
         String base64EncodedBody = splitString[1];
         Base64 base64Url = new Base64(true);
-
         String body = new String(base64Url.decode(base64EncodedBody));
-        JSONObject tokenBody = new JSONObject(body);
-        long userID = Long.parseLong(tokenBody.get("userID").toString());
 
-        return userID;
+        return new JSONObject(body);
     }
 
+    public long getUserIDFromToken(String token){
+        JSONObject tokenBody = getBodyFromToken(token);
+
+        return Long.parseLong(tokenBody.get("userID").toString());
+    }
+
+    public boolean isUserAnAdmin(long userID) {
+        Query query = em.createNativeQuery("SELECT roles FROM users WHERE userID = ?;")
+                .setParameter(1, userID);
+
+        String queryUserRole = query.getSingleResult().toString();
+
+        return queryUserRole.equals("ROLE_ADMIN");
+    }
 }
 
 

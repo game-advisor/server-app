@@ -1,6 +1,7 @@
 package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.model.deviceOriented.EditAddGPU;
 import inz.gameadvisor.restapi.model.reviewOriented.Score;
 import inz.gameadvisor.restapi.model.deviceOriented.EditAddCPU;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
@@ -52,6 +53,9 @@ public class AdminController {
         return new ResponseEntity<List<User>>(list, new HttpHeaders(), HttpStatus.OK);
     }
 
+    @PostMapping("/api/admin/companies")
+
+
     @GetMapping("/api/admin/devices")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -68,7 +72,7 @@ public class AdminController {
         return new ResponseEntity<List<Devices>>(list, new HttpHeaders(), HttpStatus.OK);
     }
 
-    @PostMapping("/api/admin/devices/cpu/add")
+    @PostMapping("/api/admin/cpu/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
@@ -77,11 +81,11 @@ public class AdminController {
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void addCPU(@RequestBody EditAddCPU cpuAdded,
-            @ApiIgnore @RequestHeader("Authorization") String token){
+                       @ApiIgnore @RequestHeader("Authorization") String token){
         adminService.addCPU(cpuAdded,token);
     }
 
-    @PutMapping("/api/admin/devices/cpu/{id}/edit")
+    @PutMapping("/api/admin/cpu/{id}/edit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
@@ -94,4 +98,32 @@ public class AdminController {
                        @ApiIgnore @RequestHeader("Authorization") String token){
         adminService.editCPU(id, editCPU, token);
     }
+
+    @PostMapping("/api/admin/gpu/add")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No manufacturer found"),
+            @ApiResponse(responseCode = "409", description = "Data duplicated")
+    })
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void addGPU(@RequestBody EditAddGPU gpuAdded,
+                       @ApiIgnore @RequestHeader("Authorization") String token){
+        adminService.addGPU(gpuAdded, token);
+    }
+
+    @PutMapping("/api/admin/gpu/{id}/edit")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No such cpu found"),
+            @ApiResponse(responseCode = "409", description = "Data duplicated")
+    })
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void editGPU(@PathVariable("id") long id,
+                        @RequestBody EditAddGPU editGPU,
+                        @ApiIgnore @RequestHeader("Authorization") String token){
+        adminService.editGPU(id, editGPU, token);
+    }
+
 }

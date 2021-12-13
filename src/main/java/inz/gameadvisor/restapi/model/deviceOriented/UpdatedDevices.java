@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DevicesUpdated {
+public class UpdatedDevices {
     private String shortName;
 
     private long cpuID;

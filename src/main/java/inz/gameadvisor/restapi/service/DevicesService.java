@@ -2,17 +2,13 @@ package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
-import inz.gameadvisor.restapi.model.deviceOriented.DevicesUpdated;
+import inz.gameadvisor.restapi.model.deviceOriented.UpdatedDevices;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.DevicesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -47,7 +43,7 @@ public class DevicesService {
         }
     }
 
-    public void createDevice(DevicesUpdated device, String token){
+    public void createDevice(UpdatedDevices device, String token){
 
         long userID = getUserIDFromToken(token);
 
@@ -61,22 +57,19 @@ public class DevicesService {
 
     }
 
+    @SneakyThrows
     public void deleteDevice(long id, String token){
         long userID = getUserIDFromToken(token);
 
-        User user = new User();
+        Devices device = devicesRepository.findById(id).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("Device of ID: " + id + " not found."));
 
-        user.setUserID(userID);
+        User user = device.getUser();
 
-        List<Devices> device = devicesRepository.findDevicesByUser(user);
-
-        int indexOfDeviceToDelete = (int) id;
-
-        try{
-            device.remove(indexOfDeviceToDelete);
+        if(userID == user.getUserID()){
+            devicesRepository.deleteById(id);
         }
-        catch (Exception e){
-            throw new CustomRepsonses.MyDataConflict("Failed to remove device");
+        else{
+            throw new CustomRepsonses.MyForbiddenAccess("User of ID " + userID + " tried to delete device of (ID): " + user.getUserID());
         }
 
     }

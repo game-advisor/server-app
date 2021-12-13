@@ -1,14 +1,12 @@
 package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.model.deviceOriented.Devices;
-import inz.gameadvisor.restapi.model.deviceOriented.DevicesUpdated;
+import inz.gameadvisor.restapi.model.deviceOriented.UpdatedDevices;
 import inz.gameadvisor.restapi.service.DevicesService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -36,8 +34,8 @@ public class DevicesController {
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void createDevice(@RequestBody DevicesUpdated device,
-                                @ApiIgnore @RequestHeader("Authorization") String token){
+    public void createDevice(@RequestBody UpdatedDevices device,
+                             @ApiIgnore @RequestHeader("Authorization") String token){
         devicesService.createDevice(device, token);
     }
 
@@ -45,10 +43,10 @@ public class DevicesController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "409", description = "Conflict")
+            @ApiResponse(responseCode = "404", description = "No such device found")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteDevice(@PathVariable long id,
+    public void deleteDevice(@PathVariable("id") long id,
                              @ApiIgnore @RequestHeader("Authorization") String token){
         devicesService.deleteDevice(id,token);
     }
