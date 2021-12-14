@@ -101,6 +101,7 @@ public class UserService {
         JSONObject userJ = new JSONObject(jsonOrderedMap);
 
         User userU = userRepository.findById(id).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("User of ID: " + id + " not found."));
+
         if(userIDToken == id){
             if(isUserAnAdmin(userIDToken)) {
                 userJ.put("userID",userU.getUserID());

@@ -49,7 +49,7 @@ public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
                 .withClaim("roles", roles)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .sign(Algorithm.HMAC256(secret));
-        response.addHeader("Authorization",token);
+//        response.addHeader("Authorization",token);
         response.setContentType("application/json");
         response.getWriter().write(
                 "{\"token\" : "
