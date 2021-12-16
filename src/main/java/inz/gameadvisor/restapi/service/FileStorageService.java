@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Objects;
 
 @Service
 public class FileStorageService {
@@ -24,7 +27,7 @@ public class FileStorageService {
     @SneakyThrows
     public FileStorageService(FileStorageProperties fileStorageProperties) {
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
-                .toAbsolutePath();
+                .toAbsolutePath().normalize();
 
         try{
             Files.createDirectories(this.fileStorageLocation);
@@ -36,17 +39,17 @@ public class FileStorageService {
 
     @SneakyThrows
     public String storeFile(MultipartFile file){
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName;
+        Date currentDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss_SSS");
+        fileName = "img_" + simpleDateFormat.format(currentDate) + ".png";
 
         try{
-            if(fileName.contains("..")){
-                throw new CustomRepsonses.MyDataConflict(fileName);
-            }
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return fileName;
         }
-        catch (IOException e)
+        catch (IOException | NullPointerException e)
         {
             throw new CustomRepsonses.MyDataConflict(fileName);
         }

@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -34,12 +36,12 @@ public class DevicesController {
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void createDevice(@RequestBody UpdatedDevices device,
+    public void addDevice(@RequestBody UpdatedDevices device,
                              @ApiIgnore @RequestHeader("Authorization") String token){
-        devicesService.createDevice(device, token);
+        devicesService.addDevice(device, token);
     }
 
-    @DeleteMapping("/api/device/{id}")
+    @DeleteMapping("/api/device/{id}/delete")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
@@ -49,5 +51,19 @@ public class DevicesController {
     public void deleteDevice(@PathVariable("id") long id,
                              @ApiIgnore @RequestHeader("Authorization") String token){
         devicesService.deleteDevice(id,token);
+    }
+
+    @PutMapping(value = "/api/device/{id}/edit", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No such device found"),
+            @ApiResponse(responseCode = "409", description = "Data conflict")
+    })
+    @ResponseStatus(code = HttpStatus.NOT_MODIFIED)
+    public ResponseEntity<Object> editDevice(@RequestBody UpdatedDevices updatedDevices,
+                                     @PathVariable("id") long id,
+                                     @ApiIgnore @RequestHeader("Authorization") String token){
+        return devicesService.editDevice(updatedDevices, id, token);
     }
 }

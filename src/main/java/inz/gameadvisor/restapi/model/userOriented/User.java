@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.model.userOriented;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,11 +23,11 @@ public class User {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private  String password;
+    private @JsonIgnore String password;
 
     @Column(columnDefinition = "varchar(16)",nullable = false)
     @NotNull
-    private  boolean enabled;
+    private boolean enabled;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
@@ -38,5 +39,5 @@ public class User {
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private String roles;
+    private @JsonIgnore String roles;
 }
