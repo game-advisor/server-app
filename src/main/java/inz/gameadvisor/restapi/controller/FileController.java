@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//@ApiIgnore
+@ApiIgnore
 @RestController
 @RequiredArgsConstructor
 public class FileController {
@@ -40,9 +40,8 @@ public class FileController {
 
     @PostMapping("/api/files/upload/uploadManyFiles")
     public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
-        return Arrays.asList(files)
-                .stream()
-                .map(file -> uploadFile(file))
+        return Arrays.stream(files)
+                .map(this::uploadFile)
                 .collect(Collectors.toList());
     }
 
