@@ -36,9 +36,9 @@ public class DevicesController {
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void addDevice(@RequestBody UpdatedDevices device,
+    public ResponseEntity<Object> addDevice(@RequestBody UpdatedDevices device,
                              @ApiIgnore @RequestHeader("Authorization") String token){
-        devicesService.addDevice(device, token);
+        return devicesService.addDevice(device, token);
     }
 
     @DeleteMapping("/api/device/{id}/delete")
@@ -47,10 +47,9 @@ public class DevicesController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "No such device found")
     })
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteDevice(@PathVariable("id") long id,
-                             @ApiIgnore @RequestHeader("Authorization") String token){
-        devicesService.deleteDevice(id,token);
+    public ResponseEntity<Object> deleteDevice(@PathVariable("id") long id,
+                                               @ApiIgnore @RequestHeader("Authorization") String token){
+        return devicesService.deleteDevice(id,token);
     }
 
     @PutMapping(value = "/api/device/{id}/edit", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,7 +59,6 @@ public class DevicesController {
             @ApiResponse(responseCode = "404", description = "No such device found"),
             @ApiResponse(responseCode = "409", description = "Data conflict")
     })
-    @ResponseStatus(code = HttpStatus.NOT_MODIFIED)
     public ResponseEntity<Object> editDevice(@RequestBody UpdatedDevices updatedDevices,
                                      @PathVariable("id") long id,
                                      @ApiIgnore @RequestHeader("Authorization") String token){

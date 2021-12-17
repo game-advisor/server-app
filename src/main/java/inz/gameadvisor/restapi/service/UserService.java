@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.service;
 
+import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
 import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
@@ -7,8 +8,6 @@ import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -25,69 +23,80 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService extends CustomFunctions {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CustomFunctions customFunctions = new CustomFunctions();
+    private String path;
 
     @PersistenceContext
     EntityManager em;
 
     @Transactional
-    public void editUserInfo(UpdateUser updateUser, String token) throws CustomRepsonses.MyNotFoundException {
+    public ResponseEntity<Object> editUserInfo(UpdateUser updateUser, String token) throws CustomRepsonses.MyNotFoundException {
         long userID = getUserIDFromToken(token);
         String password = updateUser.getPassword();
         String username = updateUser.getUsername();
+        int passwordUpdate = 0, usernameUpdate = 0;
 
         if(Objects.isNull(password) || Objects.isNull(username)) {
-            throw new CustomRepsonses.MyBadRequestException("Yoooooo");
+            return responseFromServer(HttpStatus.BAD_REQUEST,"/api/user/edit","Bad request");
         }
 
         if (!password.isBlank()) {
             password = passwordEncoder.encode(password);
-            Query query1 = em.createNativeQuery("UPDATE users SET password = ? WHERE userID = ?")
-                    .setParameter(1, password)
-                    .setParameter(2, userID);
-            query1.executeUpdate();
+            passwordUpdate = updateField("users","password",password,"userID",String.valueOf(userID));
         }
         if (!username.isBlank()) {
-            Query query1 = em.createNativeQuery("UPDATE users SET username = ? WHERE userID = ?")
-                    .setParameter(1, username)
-                    .setParameter(2, userID);
-            query1.executeUpdate();
+            usernameUpdate = updateField("users","username",username,"userID",String.valueOf(userID));
         }
+        if(usernameUpdate == 0 && passwordUpdate == 0){
+            return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,"/api/user/edit","Records have not been updated");
+        }
+        else if (usernameUpdate > 0 && passwordUpdate > 0){
+            return responseFromServer(HttpStatus.OK,"/api/user/edit","Username and password updated");
+        }
+        else if(passwordUpdate > 0){
+            return responseFromServer(HttpStatus.OK,"/api/user/edit","Password updated");
+        }
+        else if(usernameUpdate > 0){
+            return responseFromServer(HttpStatus.OK,"/api/user/edit","Username updated");
+        }
+        return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,"/api/user/edit","Method has not been applied");
     }
 
-    public void register(RegisterCredentials registerCredentials) {
+    public ResponseEntity<Object> register(RegisterCredentials registerCredentials) {
         User user = new User();
         String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
                 + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
         String username = registerCredentials.getUsername();
         String email = registerCredentials.getEmail();
-        if(Objects.isNull(email) || Objects.isNull(username))
+        if(Objects.isNull(email) || Objects.isNull(username) || Objects.isNull(registerCredentials.getPassword()))
         {
-            throw new CustomRepsonses.MyBadRequestException("Yoooooo");
+            return responseFromServer(HttpStatus.BAD_REQUEST,"/api/user/register","Bad request");
         }
         if (username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32) {
-            throw new CustomRepsonses.MyDataConflict("Data too long");
+            return responseFromServer(HttpStatus.UNPROCESSABLE_ENTITY,"/api/user/register","Data too long");
         } else {
             if (!checkEmailValidity(email, regex)) {
-                throw new CustomRepsonses.MyDataConflict("Mail did not fit regex");
+                return responseFromServer(HttpStatus.BAD_REQUEST,"/api/user/register","Email is not in valid format");
             } else {
                 Query emailQuery = em.createNativeQuery("SELECT email,username FROM users WHERE email = ? OR username = ?")
                         .setParameter(1, email)
                         .setParameter(2, username);
                 List results1 = emailQuery.getResultList();
                 if (!results1.isEmpty()) {
-                    throw new CustomRepsonses.MyDataConflict("Data duplicated");
+                    return responseFromServer(HttpStatus.CONFLICT,"/api/user/register","There is a user with such username/email");
                 } else {
                     user.setEmail(registerCredentials.getEmail());
                     user.setUsername(registerCredentials.getUsername());
                     user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
-                    user.setAvatarPath("img/defaultAvatar64x64.png");
+                    user.setAvatarPath("defaultAvatar128x128.png");
                     user.setEnabled(true);
                     user.setRoles("ROLE_USER");
                     userRepository.save(user);
+                    return responseFromServer(HttpStatus.OK,"/api/user/register","User has been registered");
                 }
             }
         }
@@ -96,7 +105,7 @@ public class UserService {
     public ResponseEntity<Object> getUserInfo(long id, String token){
         long userIDToken = getUserIDFromToken(token);
 
-        LinkedHashMap<String, String> jsonOrderedMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> jsonOrderedMap = new LinkedHashMap<>();
 
         JSONObject userJ = new JSONObject(jsonOrderedMap);
 

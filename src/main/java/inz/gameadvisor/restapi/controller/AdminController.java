@@ -17,6 +17,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequiredArgsConstructor
 public class AdminController {
@@ -48,11 +49,8 @@ public class AdminController {
             @RequestParam(defaultValue = "userID") String sortBy,
             @ApiIgnore @RequestHeader("Authorization") String token){
         List<User> list = adminService.getAllUsersList(pageNumber,pageSize,sortBy,token);
-        return new ResponseEntity<List<User>>(list, new HttpHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
     }
-
-    @PostMapping("/api/admin/companies")
-
 
     @GetMapping("/api/admin/devices")
     @ApiResponses(value = {
@@ -67,6 +65,6 @@ public class AdminController {
             @RequestParam(defaultValue = "deviceID") String sortBy,
             @ApiIgnore @RequestHeader("Authorization") String token){
         List<Devices> list = adminService.getAllDevicesList(pageNumber,pageSize,sortBy,token);
-        return new ResponseEntity<List<Devices>>(list, new HttpHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
     }
 }

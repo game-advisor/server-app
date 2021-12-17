@@ -19,14 +19,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @ApiIgnore
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequiredArgsConstructor
 public class FileController {
 
     private final FileStorageService fileStorageService;
 
-    @PostMapping("/api/files/upload")
-    public UploadFileResponse uploadFile(@RequestParam("file")MultipartFile file){
+    @PostMapping("/api/avatars/upload")
+    public UploadFileResponse uploadFile(@RequestParam("file")MultipartFile file,
+                                         @RequestHeader("Authorization")String token){
+
+
         String fileName = fileStorageService.storeFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -38,14 +42,7 @@ public class FileController {
                 file.getContentType(), file.getSize());
     }
 
-    @PostMapping("/api/files/upload/uploadManyFiles")
-    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
-        return Arrays.stream(files)
-                .map(this::uploadFile)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("/api/files/download/{fileName:.+}")
+    @GetMapping("/api/avatars/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
         // Load file as Resource
         Resource resource = fileStorageService.loadFileAsResource(fileName);
