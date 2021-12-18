@@ -45,8 +45,9 @@ public class UserController extends CustomFunctions {
             @ApiResponse(responseCode = "500", description = "Method has not been used")
     })
     public ResponseEntity<Object> updateUserInfo(@RequestBody UpdateUser updateUser,
-                               @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
-        return userService.editUserInfo(updateUser, token);
+                                                 HttpServletRequest request,
+                                                 @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
+        return userService.editUserInfo(updateUser, request, token);
     }
 
     @GetMapping("/api/user/{id}")
@@ -55,12 +56,12 @@ public class UserController extends CustomFunctions {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<Object> getUserInfo(@PathVariable("id") long id,
-                                      @ApiIgnore @RequestHeader("Authorization") String token){
+                                              @ApiIgnore @RequestHeader("Authorization") String token){
         return userService.getUserInfo(id, token);
     }
 
     @PostMapping("/api/user/login")
-    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ResponseStatus(code = HttpStatus.OK)
     public void login(@RequestBody LoginCredentials credentials){
     }
@@ -72,8 +73,9 @@ public class UserController extends CustomFunctions {
             @ApiResponse(responseCode = "409", description = "Data duplicated"),
             @ApiResponse(responseCode = "422", description = "Body payload is wrong")
     })
-    public ResponseEntity<Object> register(@RequestBody RegisterCredentials registerCredentials){
-        return userService.register(registerCredentials);
+    public ResponseEntity<Object> register(@RequestBody RegisterCredentials registerCredentials,
+                                           HttpServletRequest request){
+        return userService.register(registerCredentials, request);
     }
 
     @GetMapping("/api/user/{id}/avatar")
@@ -110,7 +112,7 @@ public class UserController extends CustomFunctions {
         else{
             String message = "User was not found";
             String path = "/api/user/" + id + "/avatar";
-            return customFunctions.responseFromServer(HttpStatus.NOT_FOUND,path,message);
+            return customFunctions.responseFromServer(HttpStatus.NOT_FOUND,request,message);
         }
     }
 

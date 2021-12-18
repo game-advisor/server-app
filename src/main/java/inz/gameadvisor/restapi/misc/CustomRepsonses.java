@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.NoSuchElementException;
 
-public class CustomRepsonses {
+public class CustomRepsonses extends Exception{
     @ResponseStatus(value = HttpStatus.CONFLICT)
     public static class MyDataConflict extends DataIntegrityViolationException {
         public MyDataConflict(String message){

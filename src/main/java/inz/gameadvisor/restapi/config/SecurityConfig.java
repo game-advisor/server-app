@@ -21,7 +21,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import java.util.Date;
 
 @Configuration
 @EnableWebSecurity
@@ -63,6 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/user/register").permitAll()
                 .antMatchers("/api/user/login").permitAll()
                 .antMatchers("/error").permitAll()
+                .antMatchers("/api/user/{id}/avatar").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -70,7 +73,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(authenticationFilter())
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(),userDetailsService, secret))
                 .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                .authenticationEntryPoint((request, response, e) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    Date date = new Date(System.currentTimeMillis());
+                    String timestamp = date.toString();
+                    response.getWriter()
+                            .print(
+                                    "{\n"
+                                            + "\"message\" : \"Unauthorized\",\n"
+                                            + "\"code\" : 401,\n"
+                                            + "\"path\" : \""+request.getRequestURI()+"\",\n"
+                                            + "\"timestamp\" : \""  + timestamp + "\"\n"
+                                            + "}");
+                });
     }
 
     public JsonObjectAuthenticationFilter authenticationFilter() throws Exception{

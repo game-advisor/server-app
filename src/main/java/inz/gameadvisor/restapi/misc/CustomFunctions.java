@@ -6,24 +6,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class CustomFunctions {
 
     @PersistenceContext
     EntityManager em;
 
-    public ResponseEntity<Object> responseFromServer(HttpStatus returnCode, String path, String message){
+    public ResponseEntity<Object> responseFromServer(HttpStatus returnCode, HttpServletRequest request, String message){
         LinkedHashMap<String, String> jsonOrderedMap = new LinkedHashMap<>();
         JSONObject response = new JSONObject(jsonOrderedMap);
         Date date = new Date(System.currentTimeMillis());
         response.put("message",message);
         response.put("code", returnCode.value());
         response.put("timestamp",date);
-        response.put("path", path);
+        response.put("path", request.getRequestURI());
         return new ResponseEntity<>(response.toMap(), returnCode);
     }
 
@@ -84,5 +87,11 @@ public class CustomFunctions {
             return false;
         }
         return true;
+    }
+
+    public static boolean checkEmailValidity(String emailAddress, String regexPattern) {
+        return Pattern.compile(regexPattern)
+                .matcher(emailAddress)
+                .matches();
     }
 }
