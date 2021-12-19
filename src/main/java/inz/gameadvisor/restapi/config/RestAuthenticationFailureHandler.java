@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Component
@@ -15,7 +16,8 @@ public class RestAuthenticationFailureHandler extends SimpleUrlAuthenticationFai
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         Date date = new Date(System.currentTimeMillis());
-        String timestamp = date.toString();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        String dateFormatted = simpleDateFormat.format(date);
         response.setContentType("application/json");
         response.getWriter()
                 .print(
@@ -23,7 +25,7 @@ public class RestAuthenticationFailureHandler extends SimpleUrlAuthenticationFai
                                 + "\"message\" : \"Unauthorized\",\n"
                                 + "\"code\" : 401,\n"
                                 + "\"path\" : \"/api/user/login\",\n"
-                                + "\"timestamp\" : \""  + timestamp + "\"\n"
+                                + "\"timestamp\" : \""  + dateFormatted + "\"\n"
                                 + "}");
         response.setStatus(401);
     }

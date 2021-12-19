@@ -1,14 +1,11 @@
 package inz.gameadvisor.restapi.controller;
 
-
-import inz.gameadvisor.restapi.model.deviceOriented.EditAddGPU;
-import inz.gameadvisor.restapi.model.deviceOriented.EditAddRAM;
+import inz.gameadvisor.restapi.model.deviceOriented.EditAddCPU;
+import inz.gameadvisor.restapi.model.deviceOriented.EditAddOS;
 import inz.gameadvisor.restapi.service.AdminService;
-import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -18,50 +15,49 @@ import javax.servlet.http.HttpServletRequest;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequiredArgsConstructor
-public class RAMController {
+public class OSController {
 
     private final AdminService adminService;
 
-    @PostMapping("/api/admin/ram/add")
+    @PostMapping("/api/admin/os/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "404", description = "Not found"),
-            @ApiResponse(responseCode = "409", description = "Data conflict"),
-            @ApiResponse(responseCode = "500", description = "Internal error when adding record")
+            @ApiResponse(responseCode = "404", description = "No manufacturer found"),
+            @ApiResponse(responseCode = "409", description = "Data duplicated"),
+            @ApiResponse(responseCode = "500", description = "Internal error occurred when adding record")
     })
-    public ResponseEntity<Object> addRAM(@RequestBody EditAddRAM addRAM,
+    public ResponseEntity<Object> addOS(@RequestBody EditAddOS addOS,
                                          HttpServletRequest request,
                                          @ApiIgnore @RequestHeader("Authorization") String token){
-        return adminService.addRAM(addRAM,request, token);
+        return adminService.addOS(addOS,request,token);
     }
 
-
-    @PutMapping("/api/admin/ram/{id}/edit")
+    @PutMapping("/api/admin/os/{id}/edit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "404", description = "Not found"),
-            @ApiResponse(responseCode = "409", description = "Data conflict"),
-            @ApiResponse(responseCode = "500", description = "Internal error when updating record")
+            @ApiResponse(responseCode = "404", description = "No such cpu found"),
+            @ApiResponse(responseCode = "409", description = "Data duplicated"),
+            @ApiResponse(responseCode = "500", description = "Internal error occurred when updating record")
     })
-    public ResponseEntity<Object> editRAM(@PathVariable("id") long id,
-                        @RequestBody EditAddRAM editRAM,
-                        HttpServletRequest request,
-                        @ApiIgnore @RequestHeader("Authorization") String token){
-        return adminService.editRAM(id, editRAM, request, token);
+    public ResponseEntity<Object> editOS(@PathVariable("id") long id,
+                                          @RequestBody EditAddOS editOS,
+                                          HttpServletRequest request,
+                                          @ApiIgnore @RequestHeader("Authorization") String token){
+        return adminService.editOS(id, editOS, request, token);
     }
 
-    @DeleteMapping("/api/admin/ram/{id}/delete")
+    @DeleteMapping("/api/admin/os/{id}/delete")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "500", description = "Internal error occurred when deleting record")
     })
-    public ResponseEntity<Object> deleteRAM(@PathVariable("id") long id,
+    public ResponseEntity<Object> deleteOS(@PathVariable("id") long id,
                                            HttpServletRequest request,
                                            @ApiIgnore @RequestHeader("Authorization") String token){
-        return adminService.deleteRAM(id, request, token);
+        return adminService.deleteOS(id, request, token);
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Configuration
@@ -78,14 +79,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     Date date = new Date(System.currentTimeMillis());
-                    String timestamp = date.toString();
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                    String dateFormatted = simpleDateFormat.format(date);
                     response.getWriter()
                             .print(
                                     "{\n"
                                             + "\"message\" : \"Unauthorized\",\n"
                                             + "\"code\" : 401,\n"
                                             + "\"path\" : \""+request.getRequestURI()+"\",\n"
-                                            + "\"timestamp\" : \""  + timestamp + "\"\n"
+                                            + "\"timestamp\" : \""  + dateFormatted + "\"\n"
                                             + "}");
                 });
     }

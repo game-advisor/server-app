@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -31,9 +32,10 @@ public class AdminController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public User getUserInfo(@PathVariable("id") long id,
-                            @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
-        return adminService.getUserInfo(id,token);
+    public ResponseEntity<Object> getUserInfo(@PathVariable("id") long id,
+                                              HttpServletRequest request,
+                                              @ApiIgnore @RequestHeader("Authorization") String token){
+        return adminService.getUserInfo(id,request,token);
     }
 
     @GetMapping("/api/admin/users")
@@ -42,14 +44,12 @@ public class AdminController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "No users found")
     })
-    @ResponseStatus(code = HttpStatus.OK)
-    public ResponseEntity<List<User>> getAllUsersList(
-            @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(defaultValue = "userID") String sortBy,
-            @ApiIgnore @RequestHeader("Authorization") String token){
-        List<User> list = adminService.getAllUsersList(pageNumber,pageSize,sortBy,token);
-        return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
+    public ResponseEntity<Object> getAllUsersInfo(@RequestParam(defaultValue = "0") Integer pageNumber,
+                                                  @RequestParam(defaultValue = "10") Integer pageSize,
+                                                  @RequestParam(defaultValue = "userID") String sortBy,
+                                                  @ApiIgnore @RequestHeader("Authorization") String token,
+                                                  HttpServletRequest request){
+        return adminService.getAllUsersInfo(pageNumber,pageSize,sortBy,token,request);
     }
 
     @GetMapping("/api/admin/devices")
@@ -58,13 +58,11 @@ public class AdminController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "No devices found")
     })
-    @ResponseStatus(code = HttpStatus.OK)
-    public ResponseEntity<List<Devices>> getAllDevicesList(
-            @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(defaultValue = "deviceID") String sortBy,
-            @ApiIgnore @RequestHeader("Authorization") String token){
-        List<Devices> list = adminService.getAllDevicesList(pageNumber,pageSize,sortBy,token);
-        return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
+    public ResponseEntity<Object> getAllDevicesList(@RequestParam(defaultValue = "0") Integer pageNumber,
+                                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                                    @RequestParam(defaultValue = "deviceID") String sortBy,
+                                                    @ApiIgnore @RequestHeader("Authorization") String token,
+                                                    HttpServletRequest request){
+        return adminService.getAllDevicesList(pageNumber,pageSize,sortBy,token, request);
     }
 }

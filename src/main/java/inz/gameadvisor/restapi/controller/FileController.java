@@ -26,7 +26,7 @@ public class FileController {
 
     private final FileStorageService fileStorageService;
 
-    @PostMapping("/api/avatars/upload")
+    @PostMapping("/api/files/upload")
     public UploadFileResponse uploadFile(@RequestParam("file")MultipartFile file,
                                          @RequestHeader("Authorization")String token){
 
@@ -42,7 +42,7 @@ public class FileController {
                 file.getContentType(), file.getSize());
     }
 
-    @GetMapping("/api/avatars/download/{fileName:.+}")
+    @GetMapping("/api/files/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
         // Load file as Resource
         Resource resource = fileStorageService.loadFileAsResource(fileName);
