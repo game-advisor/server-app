@@ -14,9 +14,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @ApiIgnore
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -31,7 +28,7 @@ public class FileController {
                                          @RequestHeader("Authorization")String token){
 
 
-        String fileName = fileStorageService.storeFile(file);
+        String fileName = fileStorageService.storeFile(file, token);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/files/download/")

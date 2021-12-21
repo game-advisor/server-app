@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.service;
 
+import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.misc.FileStorageProperties;
 import lombok.SneakyThrows;
@@ -18,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-public class FileStorageService {
+public class FileStorageService extends CustomFunctions {
 
     private final Path fileStorageLocation;
 
@@ -36,11 +37,18 @@ public class FileStorageService {
     }
 
     @SneakyThrows
-    public String storeFile(MultipartFile file){
+    public String storeFile(MultipartFile file, String token){
         String fileName;
-        Date currentDate = new Date(System.currentTimeMillis());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss_SSS");
-        fileName = "img_" + simpleDateFormat.format(currentDate) + ".png";
+        if(!isUserAnAdmin(getUserIDFromToken(token))){
+            Date currentDate = new Date(System.currentTimeMillis());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss_SSS");
+            fileName = "img_" + simpleDateFormat.format(currentDate) + ".png";
+        }
+        else{
+            fileName = file.getName();
+        }
+
+
 
         try{
             Path targetLocation = this.fileStorageLocation.resolve(fileName);

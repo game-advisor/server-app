@@ -610,9 +610,4 @@ public class AdminService extends CustomFunctions {
         }
         return responseFromServer(HttpStatus.OK,request,"OS has been deleted");
     }
-
-    //Games
-    public ResponseEntity<Object> getGamesWithName(String name){
-        return null;
-    }
 }

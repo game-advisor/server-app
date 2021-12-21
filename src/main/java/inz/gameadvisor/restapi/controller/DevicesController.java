@@ -34,7 +34,7 @@ public class DevicesController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No device found")
     })
-    public ResponseEntity<Object> getDevicesByCurrentUserID(@RequestParam(defaultValue = "0") Integer pageNumber,
+    public ResponseEntity<Object> getDevicesByUserID(@RequestParam(defaultValue = "0") Integer pageNumber,
                                                             @RequestParam(defaultValue = "10") Integer pageSize,
                                                             @RequestParam(defaultValue = "deviceID") String sortBy,
                                                             @PathVariable("id") long id,
