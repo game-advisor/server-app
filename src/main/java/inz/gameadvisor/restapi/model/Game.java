@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -21,4 +22,7 @@ public class Game {
     private Companies company;
 
     private String imagePath;
+
+    @Column(name = "publishDate")
+    private Date publishDate;
 }
