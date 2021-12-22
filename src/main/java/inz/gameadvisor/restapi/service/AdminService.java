@@ -1,6 +1,5 @@
 package inz.gameadvisor.restapi.service;
 
-import inz.gameadvisor.restapi.controller.RAMController;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.Companies;
@@ -25,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -194,6 +191,13 @@ public class AdminService extends CustomFunctions {
                     return responseFromServer(HttpStatus.CONFLICT,request,"Record with the same name exists");
                 }
             }
+            if(!series.isBlank()){
+                if(!Objects.equals(gpu.get().getSeries(), series)){
+                    if(updateField("cpu","series",series,"cpuID",String.valueOf(id)) == 0){
+                        return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
+                    }
+                }
+            }
             if(gpu.get().getManufID() != manufID){
                 if(updateField("cpu","manufID",String.valueOf(manufID),"cpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
@@ -201,11 +205,6 @@ public class AdminService extends CustomFunctions {
             }
             if(gpu.get().getScore() != score){
                 if(updateField("cpu","score",String.valueOf(score),"cpuID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(!Objects.equals(gpu.get().getSeries(), series)){
-                if(updateField("cpu","series",String.valueOf(series),"cpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
             }
@@ -320,6 +319,13 @@ public class AdminService extends CustomFunctions {
                     return responseFromServer(HttpStatus.CONFLICT,request,"Record with the same name exists");
                 }
             }
+            if(!series.isBlank()){
+                if(!Objects.equals(gpu.get().getSeries(), series)){
+                    if(updateField("gpu","series",String.valueOf(series),"gpuID",String.valueOf(id)) == 0){
+                        return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
+                    }
+                }
+            }
             if(gpu.get().getManufID() != manufID){
                 if(updateField("gpu","manufID",String.valueOf(manufID),"gpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
@@ -327,11 +333,6 @@ public class AdminService extends CustomFunctions {
             }
             if(gpu.get().getScore() != score){
                 if(updateField("gpu","score",String.valueOf(score),"gpuID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(!Objects.equals(gpu.get().getSeries(), series)){
-                if(updateField("gpu","series",String.valueOf(series),"gpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
             }

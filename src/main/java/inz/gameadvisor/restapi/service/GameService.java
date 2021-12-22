@@ -21,7 +21,6 @@ public class GameService extends CustomFunctions {
         if(name.isBlank()){
             return responseFromServer(HttpStatus.UNPROCESSABLE_ENTITY,request,"Bad data payload");
         }
-
         List<Game> gameList = gameRepository.findByNameContaining(name);
 
         if(gameList.isEmpty()){
