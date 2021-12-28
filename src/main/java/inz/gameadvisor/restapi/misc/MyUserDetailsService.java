@@ -28,7 +28,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         catch(UsernameNotFoundException e)
         {
-            throw new CustomRepsonses.MyNotFoundException("User not found " + email);
+            throw new UsernameNotFoundException("Not found");
         }
 
         //user.orElseThrow(() -> new UsernameNotFoundException("Not found " + username));

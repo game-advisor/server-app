@@ -27,15 +27,15 @@ public class User {
 
     @Column(columnDefinition = "varchar(16)",nullable = false)
     @NotNull
-    private boolean enabled;
+    private @JsonIgnore boolean enabled;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull
-    private String email;
+    private @JsonIgnore String email;
 
     @Column(name= "avatarPath",columnDefinition = "varchar(255) default 'img/defaultAvatar64x64.png'",nullable = false)
     @NotNull
-    private String avatarPath;
+    private @JsonIgnore String avatarPath;
 
     @Column(columnDefinition = "varchar(255)",nullable = false)
     @NotNull

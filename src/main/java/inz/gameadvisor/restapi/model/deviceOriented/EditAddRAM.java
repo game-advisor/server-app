@@ -6,8 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EditAddRAM {
-    private String name;
-    private long manufID;
     private int size;
     private int amountOfSticks;
     private int freq;

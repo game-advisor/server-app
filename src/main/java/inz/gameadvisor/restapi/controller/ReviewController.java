@@ -7,9 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -19,25 +21,26 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/api/game/{id}/reviews/")
+    @GetMapping("/api/game/{game_id}/review/")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Reviews not found")
+            @ApiResponse(responseCode = "404", description = "Game not found")
     })
-    public List<Review> getAllReviewsForGame(@PathVariable("id") long gameID) {
-        return reviewService.getAllReviewsForGame(gameID);
+    public ResponseEntity<Object> getAllReviewsForGame(@PathVariable("game_id") long gameID,
+                                                       HttpServletRequest request) {
+        return reviewService.getAllReviewsForGame(gameID,request);
     }
 
-    @PostMapping("/api/game/{id}/reviews/create")
+    @PostMapping("/api/game/{game_id}/review/create")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Reviews not found")
+            @ApiResponse(responseCode = "404", description = "Game not found")
     })
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void createReviewForGame(@PathVariable("id") long gameID,
+    public ResponseEntity<Object> createReviewForGame(@PathVariable("game_id") long gameID,
                              @RequestBody AddReview addReview,
+                             HttpServletRequest request,
                              @ApiIgnore @RequestHeader("Authorization") String token){
-        reviewService.createReviewForGame(gameID, addReview, token);
+        return reviewService.createReviewForGame(gameID, addReview, request, token);
     }
 }

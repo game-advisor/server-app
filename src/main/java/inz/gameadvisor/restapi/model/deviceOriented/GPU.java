@@ -1,6 +1,7 @@
 package inz.gameadvisor.restapi.model.deviceOriented;
 
 
+import inz.gameadvisor.restapi.model.Companies;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +18,9 @@ public class GPU {
 
     private String name;
 
+    @ManyToOne
     @JoinColumn(name = "manufID", referencedColumnName = "companyID")
-    private long manufID;
+    private Companies company;
 
     private String series;
 

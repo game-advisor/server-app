@@ -1,10 +1,11 @@
-package inz.gameadvisor.restapi.model;
+package inz.gameadvisor.restapi.model.gameOriented;
 
+import inz.gameadvisor.restapi.model.Companies;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
 
 @Getter
 @Setter

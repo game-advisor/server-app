@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +27,12 @@ public class UserService extends CustomFunctions {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CustomFunctions customFunctions = new CustomFunctions();
-    private String path;
 
     @PersistenceContext
     EntityManager em;
 
     @Transactional
-    public ResponseEntity<Object> editUserInfo(UpdateUser updateUser, HttpServletRequest request, String token) throws CustomRepsonses.MyNotFoundException {
+    public ResponseEntity<Object> editUserInfo(UpdateUser updateUser, HttpServletRequest request, String token) {
         long userID = getUserIDFromToken(token);
         String password = updateUser.getPassword();
         String username = updateUser.getUsername();
@@ -68,15 +67,15 @@ public class UserService extends CustomFunctions {
     public ResponseEntity<Object> register(RegisterCredentials registerCredentials,
                                            HttpServletRequest request) {
         User user = new User();
-        String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
-                + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
+        String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@" + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
         String username = registerCredentials.getUsername();
         String email = registerCredentials.getEmail();
-        if(Objects.isNull(email) || Objects.isNull(username) || Objects.isNull(registerCredentials.getPassword()))
+        String password = registerCredentials.getPassword();
+        if(Objects.isNull(email) || Objects.isNull(username) || Objects.isNull(password))
         {
             return responseFromServer(HttpStatus.BAD_REQUEST,request,"Bad request");
         }
-        if (username.length() > 64 || email.length() > 255 || registerCredentials.getPassword().length() > 32) {
+        if (username.length() > 64 || email.length() > 255 || password.length() > 32) {
             return responseFromServer(HttpStatus.UNPROCESSABLE_ENTITY,request,"Data too long");
         } else {
             if (!checkEmailValidity(email, regex)) {
@@ -85,13 +84,13 @@ public class UserService extends CustomFunctions {
                 Query emailQuery = em.createNativeQuery("SELECT email,username FROM users WHERE email = ? OR username = ?")
                         .setParameter(1, email)
                         .setParameter(2, username);
-                List results1 = emailQuery.getResultList();
+                List<?> results1 = emailQuery.getResultList();
                 if (!results1.isEmpty()) {
                     return responseFromServer(HttpStatus.CONFLICT,request,"There is a user with such username/email");
                 } else {
-                    user.setEmail(registerCredentials.getEmail());
-                    user.setUsername(registerCredentials.getUsername());
-                    user.setPassword(passwordEncoder.encode(registerCredentials.getPassword()));
+                    user.setEmail(email);
+                    user.setUsername(username);
+                    user.setPassword(passwordEncoder.encode(password));
                     user.setAvatarPath("defaultAvatar128x128.png");
                     user.setEnabled(true);
                     user.setRoles("ROLE_USER");
@@ -102,50 +101,50 @@ public class UserService extends CustomFunctions {
         }
     }
 
-    public ResponseEntity<Object> getUserInfo(long id, String token){
-        long userIDToken = getUserIDFromToken(token);
-
+    public ResponseEntity<Object> getUserInfo(long id, HttpServletRequest request, String token){
         LinkedHashMap<String, String> jsonOrderedMap = new LinkedHashMap<>();
-
         JSONObject userJ = new JSONObject(jsonOrderedMap);
 
-        User userU = userRepository.findById(id).orElseThrow(() -> new CustomRepsonses.MyNotFoundException("User of ID: " + id + " not found."));
+        Optional<User> userU = userRepository.findById(id);
+        if(userU.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No such user found");
+        }
 
-        if(userIDToken == id){
-            if(isUserAnAdmin(userIDToken)) {
-                userJ.put("userID",userU.getUserID());
-                userJ.put("username", userU.getUsername());
-                userJ.put("password", userU.getPassword());
-                userJ.put("enabled", userU.isEnabled());
-                userJ.put("email", userU.getEmail());
-                userJ.put("avatarPath", userU.getAvatarPath());
-                userJ.put("roles", userU.getRoles());
+        if(getUserIDFromToken(token) == id){
+            if(isUserAnAdmin(getUserIDFromToken(token))) {
+                userJ.put("userID",userU.get().getUserID());
+                userJ.put("username", userU.get().getUsername());
+                userJ.put("enabled", userU.get().isEnabled());
+                userJ.put("email", userU.get().getEmail());
+                userJ.put("avatarPath", userU.get().getAvatarPath());
+                userJ.put("roles", userU.get().getRoles());
             }
             else {
-                userJ.put("userID",userU.getUserID());
-                userJ.put("username", userU.getUsername());
-                userJ.put("email", userU.getEmail());
-                userJ.put("avatarPath", userU.getAvatarPath());
+                userJ.put("userID",userU.get().getUserID());
+                userJ.put("username", userU.get().getUsername());
+                userJ.put("email", userU.get().getEmail());
+                userJ.put("avatarPath", userU.get().getAvatarPath());
             }
             return new ResponseEntity<>(userJ.toMap(), HttpStatus.OK);
         }
         else{
-            if(isUserAnAdmin(userIDToken)) {
-                userJ.put("userID",userU.getUserID());
-                userJ.put("username", userU.getUsername());
-                userJ.put("password", userU.getPassword());
-                userJ.put("enabled", userU.isEnabled());
-                userJ.put("email", userU.getEmail());
-                userJ.put("avatarPath", userU.getAvatarPath());
-                userJ.put("roles", userU.getRoles());
+            if(isUserAnAdmin(getUserIDFromToken(token))) {
+                userJ.put("userID",userU.get().getUserID());
+                userJ.put("username", userU.get().getUsername());
+                userJ.put("enabled", userU.get().isEnabled());
+                userJ.put("email", userU.get().getEmail());
+                userJ.put("avatarPath", userU.get().getAvatarPath());
+                userJ.put("roles", userU.get().getRoles());
             }
             else{
-                userJ.put("username", userU.getUsername());
-                userJ.put("avatarPath", userU.getAvatarPath());
+                userJ.put("username", userU.get().getUsername());
+                userJ.put("avatarPath", userU.get().getAvatarPath());
             }
             return new ResponseEntity<>(userJ.toMap(), HttpStatus.OK);
         }
     }
+
+    //List the GPUs, CPUs, RAMs
 }
 
 

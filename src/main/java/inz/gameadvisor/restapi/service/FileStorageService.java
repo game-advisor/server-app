@@ -7,6 +7,8 @@ import lombok.SneakyThrows;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -36,7 +38,6 @@ public class FileStorageService extends CustomFunctions {
         }
     }
 
-    @SneakyThrows
     public String storeFile(MultipartFile file, String token){
         String fileName;
         if(!isUserAnAdmin(getUserIDFromToken(token))){
@@ -48,8 +49,6 @@ public class FileStorageService extends CustomFunctions {
             fileName = file.getName();
         }
 
-
-
         try{
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -57,7 +56,7 @@ public class FileStorageService extends CustomFunctions {
         }
         catch (IOException | NullPointerException e)
         {
-            throw new CustomRepsonses.MyDataConflict(fileName);
+            return String.valueOf(new ResponseEntity<String>(HttpStatus.NOT_FOUND));
         }
     }
 
@@ -68,10 +67,10 @@ public class FileStorageService extends CustomFunctions {
             if(resource.exists()) {
                 return resource;
             } else {
-                throw new CustomRepsonses.MyNotFoundException("File not found " + fileName);
+                return null;
             }
         } catch (MalformedURLException ex) {
-            throw new CustomRepsonses.MyNotFoundException("File not found " + fileName);
+            return null;
         }
     }
 }

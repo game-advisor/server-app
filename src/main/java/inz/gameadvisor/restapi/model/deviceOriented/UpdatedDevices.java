@@ -12,7 +12,10 @@ public class UpdatedDevices {
 
     private long gpuID;
 
-    private long ramID;
+    private int size;
+    private int amountOfSticks;
+    private int freq;
+    private int latency;
 
     private long osID;
 

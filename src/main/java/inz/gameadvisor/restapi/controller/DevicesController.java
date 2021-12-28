@@ -24,9 +24,9 @@ public class DevicesController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No device found")
     })
-    public ResponseEntity<Object> getDevicesByCurrentUserID(@ApiIgnore @RequestHeader("Authorization") String token,
+    public ResponseEntity<Object> getDevicesOfLoggedInUser(@ApiIgnore @RequestHeader("Authorization") String token,
                                                             HttpServletRequest request){
-        return devicesService.getDevicesByCurrentUserID(token, request);
+        return devicesService.getDevicesOfLoggedInUser(token, request);
     }
 
     @GetMapping("/api/device/user/{id}")
@@ -45,8 +45,8 @@ public class DevicesController {
     @PostMapping("/api/device/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Not found"),
-            @ApiResponse(responseCode = "409", description = "Conflict")
+            @ApiResponse(responseCode = "404", description = "No such PC part found"),
+            @ApiResponse(responseCode = "409", description = "Data conflict")
     })
     public ResponseEntity<Object> addDevice(@RequestBody UpdatedDevices addDevice,
                                             HttpServletRequest request,

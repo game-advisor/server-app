@@ -1,10 +1,12 @@
 package inz.gameadvisor.restapi.model.reviewOriented;
 
+import inz.gameadvisor.restapi.model.gameOriented.Game;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Setter
 @Getter
@@ -21,12 +23,14 @@ public class Review {
     private String content;
 
     @Column(name = "createdAt")
-    private Date dateCreated;
+    private Timestamp dateCreated;
 
+    @ManyToOne
     @JoinColumn(name = "reviewScoreID",referencedColumnName = "scoreID")
-    private long reviewScoreID;
+    private Score score;
 
-    @JoinColumn(name = "gameID", referencedColumnName = "gameID")
-    private long gameID;
+    @ManyToOne
+    @JoinColumn(name = "reviewGameID", referencedColumnName = "gameID")
+    private Game game;
 
 }

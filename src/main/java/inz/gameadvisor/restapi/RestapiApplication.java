@@ -10,7 +10,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackageClasses = UserRepository.class)
+@EnableJpaRepositories
 @EnableConfigurationProperties({FileStorageProperties.class})
 public class RestapiApplication extends SpringBootServletInitializer {
 

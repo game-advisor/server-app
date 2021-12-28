@@ -11,10 +11,7 @@ import inz.gameadvisor.restapi.service.FileStorageService;
 import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
@@ -36,7 +32,6 @@ public class UserController extends CustomFunctions {
     private final UserService userService;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
-    private final CustomFunctions customFunctions = new CustomFunctions();
 
     @PutMapping("/api/user/edit")
     @ApiResponses(value = {
@@ -46,18 +41,19 @@ public class UserController extends CustomFunctions {
     })
     public ResponseEntity<Object> updateUserInfo(@RequestBody UpdateUser updateUser,
                                                  HttpServletRequest request,
-                                                 @ApiIgnore @RequestHeader("Authorization") String token) throws CustomRepsonses.MyNotFoundException {
+                                                 @ApiIgnore @RequestHeader("Authorization") String token) {
         return userService.editUserInfo(updateUser, request, token);
     }
 
-    @GetMapping("/api/user/{id}")
+    @GetMapping("/api/user/{user_id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Object> getUserInfo(@PathVariable("id") long id,
+    public ResponseEntity<Object> getUserInfo(@PathVariable("user_id") long id,
+                                              HttpServletRequest request,
                                               @ApiIgnore @RequestHeader("Authorization") String token){
-        return userService.getUserInfo(id, token);
+        return userService.getUserInfo(id,request ,token);
     }
 
     @PostMapping("/api/user/login")
@@ -78,12 +74,12 @@ public class UserController extends CustomFunctions {
         return userService.register(registerCredentials, request);
     }
 
-    @GetMapping("/api/user/{id}/avatar")
+    @GetMapping("/api/user/{user_id}/avatar")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Object> getUserAvatar(@PathVariable("id") long id, HttpServletRequest request){
+    public ResponseEntity<Object> getUserAvatar(@PathVariable("user_id") long id, HttpServletRequest request){
 
         Optional<User> user = userRepository.findById(id);
 
@@ -110,10 +106,7 @@ public class UserController extends CustomFunctions {
                     .body(resource);
         }
         else{
-            String message = "User was not found";
-            String path = "/api/user/" + id + "/avatar";
-            return customFunctions.responseFromServer(HttpStatus.NOT_FOUND,request,message);
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"User was not found");
         }
     }
-
 }

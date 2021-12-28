@@ -4,6 +4,8 @@ import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.Companies;
 import inz.gameadvisor.restapi.model.deviceOriented.*;
+import inz.gameadvisor.restapi.model.gameOriented.EditAddGame;
+import inz.gameadvisor.restapi.model.gameOriented.Game;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.model.userOriented.UserShow;
 import inz.gameadvisor.restapi.repository.*;
@@ -16,10 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,12 +40,13 @@ public class AdminService extends CustomFunctions {
     private final GPURepository gpuRepository;
     private final RAMRepository ramRepository;
     private final OSRepository osRepository;
+    private final GameRepository gameRepository;
 
     @PersistenceContext
     EntityManager em;
 
     //User part of admin panel
-    public ResponseEntity<Object> getUserInfo(long id, HttpServletRequest request ,String token) throws CustomRepsonses.MyNotFoundException {
+    public ResponseEntity<Object> getUserInfo(long id, HttpServletRequest request ,String token) {
         if(!isUserAnAdmin(getUserIDFromToken(token))){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
         }
@@ -104,7 +107,6 @@ public class AdminService extends CustomFunctions {
     }
 
     //CPU
-    //public ResponseEntity<Object> getAllCpuList()
     public ResponseEntity<Object> addCPU(EditAddCPU addCPU, HttpServletRequest request, String token) {
         if(!isUserAnAdmin(getUserIDFromToken(token))){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
@@ -119,6 +121,10 @@ public class AdminService extends CustomFunctions {
         String name = addCPU.getName();
         String series = addCPU.getSeries();
         long manufID = addCPU.getManufID();
+        Optional<Companies> company = companiesRepository.findById(manufID);
+        if(company.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
+        }
         int score = addCPU.getScore();
 
         if(!name.isBlank()){
@@ -144,7 +150,7 @@ public class AdminService extends CustomFunctions {
         cpu.setName(name);
         cpu.setSeries(series);
         cpu.setScore(score);
-        cpu.setManufID(manufID);
+        cpu.setCompany(company.get());
         try{
             cpuRepository.save(cpu);
         }
@@ -163,8 +169,8 @@ public class AdminService extends CustomFunctions {
             return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
         }
 
-        Optional<GPU> gpu = gpuRepository.findById(id);
-        if(gpu.isEmpty()){
+        Optional<CPU> cpu = cpuRepository.findById(id);
+        if(cpu.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoCPUFoundMessage);
         }
 
@@ -192,18 +198,18 @@ public class AdminService extends CustomFunctions {
                 }
             }
             if(!series.isBlank()){
-                if(!Objects.equals(gpu.get().getSeries(), series)){
+                if(!Objects.equals(cpu.get().getSeries(), series)){
                     if(updateField("cpu","series",series,"cpuID",String.valueOf(id)) == 0){
                         return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                     }
                 }
             }
-            if(gpu.get().getManufID() != manufID){
+            if(cpu.get().getCompany() != company.get()){
                 if(updateField("cpu","manufID",String.valueOf(manufID),"cpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
             }
-            if(gpu.get().getScore() != score){
+            if(cpu.get().getScore() != score){
                 if(updateField("cpu","score",String.valueOf(score),"cpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
@@ -247,6 +253,11 @@ public class AdminService extends CustomFunctions {
         String name = addGPU.getName();
         String series = addGPU.getSeries();
         long manufID = addGPU.getManufID();
+        Optional<Companies> company = companiesRepository.findById(manufID);
+
+        if(company.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
+        }
         int score = addGPU.getScore();
 
         if(!name.isBlank()){
@@ -272,7 +283,7 @@ public class AdminService extends CustomFunctions {
         gpu.setName(name);
         gpu.setSeries(series);
         gpu.setScore(score);
-        gpu.setManufID(manufID);
+        gpu.setCompany(company.get());
         try{
             gpuRepository.save(gpu);
         }
@@ -326,7 +337,7 @@ public class AdminService extends CustomFunctions {
                     }
                 }
             }
-            if(gpu.get().getManufID() != manufID){
+            if(gpu.get().getCompany() != company.get()){
                 if(updateField("gpu","manufID",String.valueOf(manufID),"gpuID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
@@ -360,153 +371,6 @@ public class AdminService extends CustomFunctions {
         return responseFromServer(HttpStatus.OK,request,"GPU has been deleted");
     }
 
-    //RAM
-    public ResponseEntity<Object> addRAM(EditAddRAM addRAM, HttpServletRequest request, String token) {
-        if(!isUserAnAdmin(getUserIDFromToken(token))){
-            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
-        }
-
-        if(Objects.isNull(addRAM) || Objects.isNull(addRAM.getName())){
-            return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
-        }
-
-        RAM ram = new RAM();
-
-        String name = addRAM.getName();
-        long manufID = addRAM.getManufID();
-        int amountOfSticks = addRAM.getAmountOfSticks();
-        int size = addRAM.getSize();
-        int freq = addRAM.getFreq();
-        int latency = addRAM.getLatency();
-        int score = addRAM.getScore();
-
-        if(!name.isBlank()){
-            if(checkIfSameRecordExists("name","ram",name)){
-                return responseFromServer(HttpStatus.CONFLICT,request,"RAM with the same name already exists!");
-            }
-        }
-        else{
-            return responseFromServer(HttpStatus.BAD_REQUEST,request,"RAM name cannot be empty");
-        }
-
-        if(!checkIfManufacturerExistsWithSuchId(manufID)){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
-        }
-
-        if(freq <= 0 || latency <= 0 || score <= 0 || size <= 0 || amountOfSticks <= 0){
-            return responseFromServer(HttpStatus.CONFLICT,request,"Your frequency/latency/score/size/amountOfSticks values are less than 0");
-        }
-
-        ram.setName(name);
-        ram.setFreq(freq);
-        ram.setSize(size);
-        ram.setAmountOfSticks(amountOfSticks);
-        ram.setManufID(manufID);
-        ram.setLatency(latency);
-        ram.setScore(score);
-        try{
-            ramRepository.save(ram);
-        }
-        catch (Exception e){
-            return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
-        }
-        return responseFromServer(HttpStatus.OK,request,"RAM has been saved");
-    }
-    @Transactional
-    public ResponseEntity<Object> editRAM(long id, EditAddRAM editRam, HttpServletRequest request, String token){
-        if(!isUserAnAdmin(getUserIDFromToken(token))){
-            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
-        }
-
-        if(Objects.isNull(editRam) || Objects.isNull(editRam.getName())){
-            return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
-        }
-
-        Optional<RAM> ram = ramRepository.findById(id);
-        if(ram.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoRAMFoundMessage);
-        }
-
-        long manufID = editRam.getManufID();
-
-        if(manufID >= 0){
-            Optional<Companies> company = companiesRepository.findById(manufID);
-
-            if(company.isEmpty()){
-                return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
-            }
-
-            String name = editRam.getName();
-            int freq = editRam.getFreq();
-            int latency = editRam.getLatency();
-            int amountOfSticks = editRam.getAmountOfSticks();
-            int size = editRam.getSize();
-            int score = editRam.getScore();
-
-            if(!name.isBlank()){
-                if(!checkIfSameRecordExists("name","ram",name)){
-                    if(updateField("ram","name",name,"ramID",String.valueOf(id)) == 0){
-                        return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                    }
-                }
-                else{
-                    return responseFromServer(HttpStatus.CONFLICT,request,"Record with the same name exists");
-                }
-            }
-            if(ram.get().getManufID() != manufID){
-                if(updateField("ram","manufID",String.valueOf(manufID),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(ram.get().getFreq() != freq){
-                if(updateField("ram","freq",String.valueOf(freq),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(ram.get().getLatency() != latency){
-                if(updateField("ram","latency",String.valueOf(latency),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(ram.get().getAmountOfSticks() != amountOfSticks){
-                if(updateField("ram","amountOfSticks",String.valueOf(amountOfSticks),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(ram.get().getSize() != size){
-                if(updateField("ram","size",String.valueOf(size),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            if(ram.get().getScore() != score){
-                if(updateField("ram","score",String.valueOf(score),"ramID",String.valueOf(id)) == 0){
-                    return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-                }
-            }
-            return responseFromServer(HttpStatus.OK,request,"RAM has been updated");
-        }
-        return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
-    }
-    public ResponseEntity<Object> deleteRAM(long id, HttpServletRequest request, String token){
-        if(!isUserAnAdmin(getUserIDFromToken(token))){
-            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
-        }
-
-        Optional<RAM> ram = ramRepository.findById(id);
-
-        if(ram.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoRAMFoundMessage);
-        }
-
-        try{
-            ramRepository.deleteById(id);
-        }
-        catch (IllegalArgumentException e){
-            return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
-        }
-        return responseFromServer(HttpStatus.OK,request,"RAM has been deleted");
-    }
-
     //OS
     public ResponseEntity<Object> addOS(EditAddOS addOS, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
@@ -522,6 +386,12 @@ public class AdminService extends CustomFunctions {
         String name = addOS.getName();
         long manufID = addOS.getManufID();
 
+        Optional<Companies> company = companiesRepository.findById(manufID);
+
+        if(company.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
+        }
+
         if(!name.isBlank()){
             if(checkIfSameRecordExists("name","ram",name)){
                 return responseFromServer(HttpStatus.CONFLICT,request,"OS with the same name already exists!");
@@ -531,12 +401,8 @@ public class AdminService extends CustomFunctions {
             return responseFromServer(HttpStatus.BAD_REQUEST,request,"OS name cannot be empty");
         }
 
-        if(!checkIfManufacturerExistsWithSuchId(manufID)){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
-        }
-
         os.setName(name);
-        os.setManufID(manufID);
+        os.setCompany(company.get());
 
         try{
             osRepository.save(os);
@@ -583,7 +449,7 @@ public class AdminService extends CustomFunctions {
                     return responseFromServer(HttpStatus.CONFLICT,request,"Record with the same name exists");
                 }
             }
-            if(os.get().getManufID() != manufID){
+            if(os.get().getCompany() != company.get()){
                 if(updateField("os","manufID",String.valueOf(manufID),"osID",String.valueOf(id)) == 0){
                     return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
                 }
@@ -610,5 +476,32 @@ public class AdminService extends CustomFunctions {
             return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
         }
         return responseFromServer(HttpStatus.OK,request,"OS has been deleted");
+    }
+
+    //Game
+    public ResponseEntity<Object> addGame(EditAddGame addGame, HttpServletRequest request, String token) {
+        if(!isUserAnAdmin(getUserIDFromToken(token))){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+
+        if(Objects.isNull(addGame)){
+            return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
+        }
+
+        Game game = new Game();
+
+        game.setName(addGame.getName());
+
+        Optional<Companies> company = companiesRepository.findById(addGame.getCompanyID());
+        if(company.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
+        }
+        game.setCompany(company.get());
+        game.setImagePath(addGame.getImagePath());
+        game.setPublishDate(addGame.getPublishDate());
+
+        gameRepository.save(game);
+
+        return responseFromServer(HttpStatus.OK,request,"Game has been saved");
     }
 }

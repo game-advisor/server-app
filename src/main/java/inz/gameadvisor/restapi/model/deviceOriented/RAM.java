@@ -14,11 +14,6 @@ public class RAM {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long ramID;
 
-    private String name;
-
-    @JoinColumn(name = "manufID", referencedColumnName = "companyID")
-    private long manufID;
-
     //As in GB
     private int size;
 
@@ -28,6 +23,4 @@ public class RAM {
     private int freq;
 
     private int latency;
-
-    private int score;
 }

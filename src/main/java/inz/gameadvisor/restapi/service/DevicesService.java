@@ -1,12 +1,11 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
+import inz.gameadvisor.restapi.model.Companies;
 import inz.gameadvisor.restapi.model.deviceOriented.*;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.*;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +19,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,11 +31,12 @@ public class DevicesService extends CustomFunctions {
     private final RAMRepository ramRepository;
     private final OSRepository osRepository;
     private final UserRepository userRepository;
+    private final CompaniesRepository companiesRepository;
 
     @PersistenceContext
     EntityManager em;
 
-    public ResponseEntity<Object> getDevicesByCurrentUserID(String token, HttpServletRequest request){
+    public ResponseEntity<Object> getDevicesOfLoggedInUser(String token, HttpServletRequest request){
 
         long userID = getUserIDFromToken(token);
         User user = new User();
@@ -57,22 +54,20 @@ public class DevicesService extends CustomFunctions {
     public ResponseEntity<Object> getDevicesByUserID(Integer pageNumber, Integer pageSize, String sortBy, long id, HttpServletRequest request){
 
         Pageable paging = PageRequest.of(pageNumber,pageSize, Sort.by(sortBy));
-        Page<Devices> pagedResult = devicesRepository.findAll(paging);
-
-        List<Devices> devicesList = new ArrayList<>();
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No such user found");
+        }
+        Page<Devices> pagedResult = devicesRepository.findAllByUser(user.get(),paging);
 
         if(!pagedResult.hasContent())
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
         else{
-            for (Devices devices : pagedResult) {
-                User user = devices.getUser();
-                if(user.getUserID() == id)
-                    devicesList.add(devices);
-            }
-            if(devicesList.isEmpty()){
+
+            if(pagedResult.isEmpty()){
                 return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
             }
-            return new ResponseEntity<>(devicesList,HttpStatus.OK);
+            return new ResponseEntity<>(pagedResult,HttpStatus.OK);
         }
 
     }
@@ -85,7 +80,6 @@ public class DevicesService extends CustomFunctions {
 
         Optional<CPU> cpu = cpuRepository.findById(device.getCpuID());
         Optional<GPU> gpu = gpuRepository.findById(device.getGpuID());
-        Optional<RAM> ram = ramRepository.findById(device.getRamID());
         Optional<OS> os = osRepository.findById(device.getOsID());
         Optional<User> user = userRepository.findById(userID);
 
@@ -94,9 +88,6 @@ public class DevicesService extends CustomFunctions {
         }
         else if(gpu.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoGPUFoundMessage);
-        }
-        else if(ram.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoRAMFoundMessage);
         }
         else if(os.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoOSFoundMessage);
@@ -112,7 +103,13 @@ public class DevicesService extends CustomFunctions {
         }
         createdDevice.setCpu(cpu.get());
         createdDevice.setGpu(gpu.get());
-        createdDevice.setRam(ram.get());
+        RAM ram = new RAM();
+        ram.setSize(device.getSize());
+        ram.setFreq(device.getFreq());
+        ram.setLatency(device.getLatency());
+        ram.setAmountOfSticks(device.getAmountOfSticks());
+        ramRepository.save(ram);
+        createdDevice.setRam(ram);
         createdDevice.setUser(user.get());
         createdDevice.setOs(os.get());
         createdDevice.setSSD(device.isSSD());
@@ -153,8 +150,6 @@ public class DevicesService extends CustomFunctions {
 
     @Transactional
     public ResponseEntity<Object> editDevice(UpdatedDevices updatedDevices, HttpServletRequest request, long id, String token){
-        long userID = getUserIDFromToken(token);
-
         if(Objects.isNull(updatedDevices) || Objects.isNull(updatedDevices.getShortName())){
             return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
         }
@@ -166,9 +161,17 @@ public class DevicesService extends CustomFunctions {
 
         Optional<CPU> cpu = cpuRepository.findById(updatedDevices.getCpuID());
         Optional<GPU> gpu = gpuRepository.findById(updatedDevices.getGpuID());
-        Optional<RAM> ram = ramRepository.findById(updatedDevices.getRamID());
+        Optional<RAM> ram = ramRepository.findById(device.get().getRam().getRamID());
         Optional<OS> os = osRepository.findById(updatedDevices.getOsID());
-        Optional<User> user = userRepository.findById(userID);
+        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
+        }
+
+        if(device.get().getUser().getUserID() != user.get().getUserID()){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
 
         if(cpu.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoCPUFoundMessage);
@@ -182,14 +185,10 @@ public class DevicesService extends CustomFunctions {
         else if(os.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoOSFoundMessage);
         }
-        else if(user.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
-        }
 
         //IDs of the components
         long cpuID = cpu.get().getCpuID();
         long gpuID = gpu.get().getGpuID();
-        long ramID = ram.get().getRamID();
         long osID = os.get().getOsID();
 
         //Name of device
@@ -217,9 +216,24 @@ public class DevicesService extends CustomFunctions {
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (gpuID)");
             }
         }
-        if(ramID != updatedDevices.getRamID()){
-            if(updateField("devices","ramID",String.valueOf(updatedDevices.getRamID()),"deviceID",String.valueOf(id)) == 0){
-                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (ramID)");
+        if(ram.get().getSize() != updatedDevices.getSize()){
+            if(updateField("ram","size",String.valueOf(updatedDevices.getSize()),"ramID",String.valueOf(ram.get().getRamID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (size)");
+            }
+        }
+        if(ram.get().getFreq() != updatedDevices.getFreq()){
+            if(updateField("ram","freq",String.valueOf(updatedDevices.getFreq()),"ramID",String.valueOf(ram.get().getRamID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (freq)");
+            }
+        }
+        if(ram.get().getLatency() != updatedDevices.getLatency()){
+            if(updateField("ram","latency",String.valueOf(updatedDevices.getLatency()),"ramID",String.valueOf(ram.get().getRamID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (latency)");
+            }
+        }
+        if(ram.get().getAmountOfSticks() != updatedDevices.getAmountOfSticks()){
+            if(updateField("ram","amountOfSticks",String.valueOf(updatedDevices.getAmountOfSticks()),"ramID",String.valueOf(ram.get().getRamID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (amountOfSticks)");
             }
         }
         if(osID != updatedDevices.getOsID()){
@@ -228,5 +242,79 @@ public class DevicesService extends CustomFunctions {
             }
         }
         return responseFromServer(HttpStatus.OK,request,DeviceUpdatedMessage);
+    }
+
+    public ResponseEntity<Object> getAllCPUListBySeries(String series, HttpServletRequest request){
+        List<CPU> cpuList = cpuRepository.findAllBySeries(series);
+        if(cpuList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU of such series found");
+        }
+        List<CPUGPUName> cpuNameList = new ArrayList<>();
+        for (CPU cpu:
+                cpuList) {
+            CPUGPUName gpuName = new CPUGPUName();
+            gpuName.setName(cpu.getName());
+            cpuNameList.add(gpuName);
+        }
+        return new ResponseEntity<>(cpuNameList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getAllGPUListBySeries(String series, HttpServletRequest request){
+        List<GPU> gpuList = gpuRepository.findAllBySeries(series);
+        if(gpuList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU of such series found");
+        }
+        List<CPUGPUName> gpuNameList = new ArrayList<>();
+        for (GPU gpu:
+                gpuList) {
+            CPUGPUName gpuName = new CPUGPUName();
+            gpuName.setName(gpu.getName());
+            gpuNameList.add(gpuName);
+        }
+        return new ResponseEntity<>(gpuNameList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getCPUSeriesByCompany(String companyName, HttpServletRequest request){
+        Optional<Companies> companies = companiesRepository.findByName(companyName);
+        if(companies.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given name was not found");
+        }
+        Query query = em.createNativeQuery("SELECT series FROM cpu WHERE manufID = ? GROUP BY series")
+                .setParameter(1,companies.get().getCompanyID());
+
+        List<?> seriesList = query.getResultList();
+        List<CPUSeries> cpuSeriesList = new ArrayList<>();
+        for (Object object:
+             seriesList) {
+            CPUSeries cpuSeries = new CPUSeries();
+            cpuSeries.setSeries(String.valueOf(seriesList.get(seriesList.indexOf(object))));
+            cpuSeriesList.add(cpuSeries);
+        }
+        if(seriesList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU found for given company name");
+        }
+        return new ResponseEntity<>(cpuSeriesList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getGPUSeriesByCompany(String companyName, HttpServletRequest request){
+        Optional<Companies> companies = companiesRepository.findByName(companyName);
+        if(companies.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given name was not found");
+        }
+        Query query = em.createNativeQuery("SELECT series FROM gpu WHERE manufID = ? GROUP BY series")
+                .setParameter(1,companies.get().getCompanyID());
+
+        List<?> seriesList = query.getResultList();
+        List<GPUSeries> gpuSeriesList = new ArrayList<>();
+        for (Object object:
+                seriesList) {
+            GPUSeries gpuSeries = new GPUSeries();
+            gpuSeries.setSeries(String.valueOf(seriesList.get(seriesList.indexOf(object))));
+            gpuSeriesList.add(gpuSeries);
+        }
+        if(seriesList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU found for given company name");
+        }
+        return new ResponseEntity<>(gpuSeriesList,HttpStatus.OK);
     }
 }
