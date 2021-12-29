@@ -128,4 +128,8 @@ public class CustomFunctions {
         }
         return true;
     }
+
+    public int boolToInt(boolean b) {
+        return b ? 1 : 0;
+    }
 }

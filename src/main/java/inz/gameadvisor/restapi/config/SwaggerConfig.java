@@ -56,8 +56,9 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("GameAdvisor REST API Documentation")
-                .description("work in progress")
-                .version("1.0")
+                .description("Work in Progress")
+                //.description("Dokumentacja API dla projektu inżynierskiego \"System rekomendacji gier wykorzystujący informacje na temat parametrów urządzeń użytkownika\"")
+                .version("0.1")
                 .build();
     }
 }

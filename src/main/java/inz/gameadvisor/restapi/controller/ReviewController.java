@@ -21,7 +21,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/api/game/{game_id}/review/")
+    @GetMapping("/api/game/{game_id}/review")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game not found")

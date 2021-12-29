@@ -72,6 +72,18 @@ public class DevicesService extends CustomFunctions {
 
     }
 
+    public ResponseEntity<Object> getDeviceByID(long deviceID, String token, HttpServletRequest request){
+        Optional<Devices> device = devicesRepository.findById(deviceID);
+        if(device.isEmpty()){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+        if(device.get().getUser().getUserID() != getUserIDFromToken(token)){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+
+        return new ResponseEntity<>(device.get(),HttpStatus.OK);
+    }
+
     public ResponseEntity<Object> addDevice(UpdatedDevices device, HttpServletRequest request, String token){
 
         long userID = getUserIDFromToken(token);
@@ -239,6 +251,16 @@ public class DevicesService extends CustomFunctions {
         if(osID != updatedDevices.getOsID()){
             if(updateField("devices","osID",String.valueOf(updatedDevices.getOsID()),"deviceID",String.valueOf(id)) == 0){
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (osID)");
+            }
+        }
+        if(device.get().isHDD() != updatedDevices.isHDD()){
+            if(updateField("devices","isHDD",String.valueOf(boolToInt(updatedDevices.isHDD())),"deviceID",String.valueOf(id)) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (hdd)");
+            }
+        }
+        if(device.get().isSSD() != updatedDevices.isSSD()){
+            if(updateField("devices","isSSD",String.valueOf(boolToInt(updatedDevices.isSSD())),"deviceID",String.valueOf(id)) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Internal server error on record update (ssd)");
             }
         }
         return responseFromServer(HttpStatus.OK,request,DeviceUpdatedMessage);

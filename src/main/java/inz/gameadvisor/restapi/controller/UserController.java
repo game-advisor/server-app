@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
@@ -87,6 +88,10 @@ public class UserController extends CustomFunctions {
             String fileName = user.get().getAvatarPath();
             Resource resource = fileStorageService.loadFileAsResource(fileName);
 
+            if(resource == null){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"Image not found on server");
+            }
+
             // Try to determine file's content type
             String contentType = null;
             try {
@@ -108,5 +113,46 @@ public class UserController extends CustomFunctions {
         else{
             return responseFromServer(HttpStatus.NOT_FOUND,request,"User was not found");
         }
+    }
+
+    @GetMapping("/api/user/favGames")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No games found")
+    })
+    public ResponseEntity<Object> getUserLikedGames(@ApiIgnore @RequestHeader("Authorization") String token,
+                                                    HttpServletRequest request){
+        return userService.getUserLikedGames(token, request);
+    }
+
+    @GetMapping("/api/user/favTags")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No games found")
+    })
+    public ResponseEntity<Object> getUserLikedTags(@ApiIgnore @RequestHeader("Authorization") String token,
+                                                   HttpServletRequest request){
+        return userService.getUserLikedTags(token, request);
+    }
+
+    @PostMapping("/api/user/favGames/{game_id}/add")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No games found")
+    })
+    public ResponseEntity<Object> addGameToFavorites(@PathVariable("game_id") long gameID,
+                                                     @ApiIgnore @RequestHeader("Authorization") String token,
+                                                     HttpServletRequest request){
+        return userService.addGameToFavorites(gameID,token,request);
+    }
+
+    @DeleteMapping("/api/user/favGames/{game_id}/delete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No games found")
+    })
+    public ResponseEntity<Object> removeGameFromFavorites(@PathVariable("game_id") long gameID,
+                                                          HttpServletRequest request){
+        return userService.removeGameFromFavorites(gameID,request);
     }
 }

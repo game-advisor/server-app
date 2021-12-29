@@ -29,7 +29,19 @@ public class DevicesController {
         return devicesService.getDevicesOfLoggedInUser(token, request);
     }
 
-    @GetMapping("/api/device/user/{id}")
+    @GetMapping("/api/device/{device_id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No device found")
+    })
+    public ResponseEntity<Object> getDeviceByID(@PathVariable("device_id") long deviceID,
+                                                @ApiIgnore @RequestHeader("Authorization") String token,
+                                                HttpServletRequest request){
+        return devicesService.getDeviceByID(deviceID ,token, request);
+    }
+
+    @GetMapping("/api/device/user/{user_id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No device found")
@@ -37,7 +49,7 @@ public class DevicesController {
     public ResponseEntity<Object> getDevicesByUserID(@RequestParam(defaultValue = "0") Integer pageNumber,
                                                             @RequestParam(defaultValue = "10") Integer pageSize,
                                                             @RequestParam(defaultValue = "deviceID") String sortBy,
-                                                            @PathVariable("id") long id,
+                                                            @PathVariable("user_id") long id,
                                                             HttpServletRequest request){
         return devicesService.getDevicesByUserID(pageNumber, pageSize, sortBy, id, request);
     }

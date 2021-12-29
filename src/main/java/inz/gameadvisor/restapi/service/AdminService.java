@@ -38,7 +38,6 @@ public class AdminService extends CustomFunctions {
     private final CPURepository cpuRepository;
     private final CompaniesRepository companiesRepository;
     private final GPURepository gpuRepository;
-    private final RAMRepository ramRepository;
     private final OSRepository osRepository;
     private final GameRepository gameRepository;
 
@@ -226,7 +225,7 @@ public class AdminService extends CustomFunctions {
         Optional<CPU> cpu = cpuRepository.findById(id);
 
         if(cpu.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoRAMFoundMessage);
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCPUFoundMessage);
         }
 
         try{
@@ -359,7 +358,7 @@ public class AdminService extends CustomFunctions {
         Optional<GPU> gpu = gpuRepository.findById(id);
 
         if(gpu.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoRAMFoundMessage);
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoGPUFoundMessage);
         }
 
         try{

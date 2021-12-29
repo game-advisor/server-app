@@ -1,10 +1,13 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
-import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.model.gameOriented.Game;
+import inz.gameadvisor.restapi.model.gameOriented.Tag;
 import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
 import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
 import inz.gameadvisor.restapi.model.userOriented.User;
+import inz.gameadvisor.restapi.repository.GameRepository;
+import inz.gameadvisor.restapi.repository.TagRepository;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -16,16 +19,15 @@ import org.springframework.stereotype.Service;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserService extends CustomFunctions {
 
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
+    private final TagRepository tagRepository;
     private final PasswordEncoder passwordEncoder;
 
     @PersistenceContext
@@ -144,7 +146,46 @@ public class UserService extends CustomFunctions {
         }
     }
 
-    //List the GPUs, CPUs, RAMs
+    public ResponseEntity<Object> getUserLikedGames(String token, HttpServletRequest request){
+        List<Game> favGames = gameRepository.findByLike_userID(getUserIDFromToken(token));
+        if(favGames.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"User has no favorite games");
+        }
+        return new ResponseEntity<>(favGames.toArray(),HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getUserLikedTags(String token, HttpServletRequest request){
+        List<Tag> favTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
+        if(favTags.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"User has no favorite games");
+        }
+        return new ResponseEntity<>(favTags.toArray(),HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity<Object> addGameToFavorites(long gameID, String token, HttpServletRequest request){
+        Optional<Game> game = gameRepository.findById(gameID);
+        if(game.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game not found");
+        }
+        Query query = em.createNativeQuery("INSERT INTO favgames (userID,gameID) VALUES (?,?)")
+                .setParameter(1,getUserIDFromToken(token))
+                .setParameter(2, gameID);
+        query.executeUpdate();
+        return responseFromServer(HttpStatus.OK,request,"Game added to favorites");
+    }
+
+    @Transactional
+    public ResponseEntity<Object> removeGameFromFavorites(long gameID, HttpServletRequest request){
+        Optional<Game> game = gameRepository.findById(gameID);
+        if(game.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game not found");
+        }
+        Query query = em.createNativeQuery("DELETE FROM favgames WHERE gameID = ?")
+                .setParameter(1, gameID);
+        query.executeUpdate();
+        return responseFromServer(HttpStatus.OK,request,"Game deleted from favorites");
+    }
 }
 
 
