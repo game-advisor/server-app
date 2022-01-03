@@ -115,6 +115,37 @@ public class UserController extends CustomFunctions {
         }
     }
 
+    @GetMapping("/api/user/favTags")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tags found")
+    })
+    public ResponseEntity<Object> getUserLikedTags(@ApiIgnore @RequestHeader("Authorization") String token,
+                                                   HttpServletRequest request){
+        return userService.getUserLikedTags(token, request);
+    }
+
+    @PostMapping("/api/user/favTags/{tag_id}/add")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> addTagToFavorites(@PathVariable("tag_id") long tagID,
+                                                     @ApiIgnore @RequestHeader("Authorization") String token,
+                                                     HttpServletRequest request){
+        return userService.addTagToFavorites(tagID,token,request);
+    }
+
+    @DeleteMapping("/api/user/favTags/{tag_id}/delete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> removeTagFromFavorites(@PathVariable("tag_id") long tagID,
+                                                          HttpServletRequest request){
+        return userService.removeTagFromFavorites(tagID,request);
+    }
+
     @GetMapping("/api/user/favGames")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -125,20 +156,10 @@ public class UserController extends CustomFunctions {
         return userService.getUserLikedGames(token, request);
     }
 
-    @GetMapping("/api/user/favTags")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "No games found")
-    })
-    public ResponseEntity<Object> getUserLikedTags(@ApiIgnore @RequestHeader("Authorization") String token,
-                                                   HttpServletRequest request){
-        return userService.getUserLikedTags(token, request);
-    }
-
     @PostMapping("/api/user/favGames/{game_id}/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "No games found")
+            @ApiResponse(responseCode = "404", description = "No game found")
     })
     public ResponseEntity<Object> addGameToFavorites(@PathVariable("game_id") long gameID,
                                                      @ApiIgnore @RequestHeader("Authorization") String token,
@@ -149,10 +170,12 @@ public class UserController extends CustomFunctions {
     @DeleteMapping("/api/user/favGames/{game_id}/delete")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "No games found")
+            @ApiResponse(responseCode = "404", description = "No game found")
     })
     public ResponseEntity<Object> removeGameFromFavorites(@PathVariable("game_id") long gameID,
                                                           HttpServletRequest request){
         return userService.removeGameFromFavorites(gameID,request);
     }
+
+
 }

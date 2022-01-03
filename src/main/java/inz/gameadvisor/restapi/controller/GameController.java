@@ -67,4 +67,13 @@ public class GameController {
         return adminService.addGame(addGame,request,token);
     }
 
+    @GetMapping("/api/tags")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> listAllTags(HttpServletRequest request){
+        return gameService.listAllTags(request);
+    }
+
 }

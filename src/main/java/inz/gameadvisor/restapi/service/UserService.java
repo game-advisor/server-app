@@ -83,11 +83,8 @@ public class UserService extends CustomFunctions {
             if (!checkEmailValidity(email, regex)) {
                 return responseFromServer(HttpStatus.BAD_REQUEST,request,"Email is not in valid format");
             } else {
-                Query emailQuery = em.createNativeQuery("SELECT email,username FROM users WHERE email = ? OR username = ?")
-                        .setParameter(1, email)
-                        .setParameter(2, username);
-                List<?> results1 = emailQuery.getResultList();
-                if (!results1.isEmpty()) {
+                Optional<User> userOptional = userRepository.findByUsernameOrEmail(username,email);
+                if (userOptional.isPresent()) {
                     return responseFromServer(HttpStatus.CONFLICT,request,"There is a user with such username/email");
                 } else {
                     user.setEmail(email);
@@ -169,7 +166,7 @@ public class UserService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Game not found");
         }
         Query query = em.createNativeQuery("INSERT INTO favgames (userID,gameID) VALUES (?,?)")
-                .setParameter(1,getUserIDFromToken(token))
+                .setParameter(1, getUserIDFromToken(token))
                 .setParameter(2, gameID);
         query.executeUpdate();
         return responseFromServer(HttpStatus.OK,request,"Game added to favorites");
@@ -185,6 +182,37 @@ public class UserService extends CustomFunctions {
                 .setParameter(1, gameID);
         query.executeUpdate();
         return responseFromServer(HttpStatus.OK,request,"Game deleted from favorites");
+    }
+
+    @Transactional
+    public ResponseEntity<Object> addTagToFavorites(long tagID, String token, HttpServletRequest request){
+        Optional<Tag> tag = tagRepository.findById(tagID);
+        if(tag.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game not found");
+        }
+        List<Tag> favTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
+        for (Tag favTag : favTags) {
+            if (favTag.getTagID() == tagID) {
+                return responseFromServer(HttpStatus.CONFLICT, request, "This tag is already in your favorites");
+            }
+        }
+        Query query = em.createNativeQuery("INSERT INTO favtags (tagID,userID) VALUES (?,?)")
+                .setParameter(1, tagID)
+                .setParameter(2, getUserIDFromToken(token));
+        query.executeUpdate();
+        return responseFromServer(HttpStatus.OK,request,"Tag added to favorites");
+    }
+
+    @Transactional
+    public ResponseEntity<Object> removeTagFromFavorites(long tagID, HttpServletRequest request){
+        Optional<Tag> tag = tagRepository.findById(tagID);
+        if(tag.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Tag not found");
+        }
+        Query query = em.createNativeQuery("DELETE FROM favtags WHERE tagID = ?")
+                .setParameter(1, tagID);
+        query.executeUpdate();
+        return responseFromServer(HttpStatus.OK,request,"Tag deleted from favorites");
     }
 }
 

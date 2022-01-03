@@ -1,5 +1,6 @@
 package inz.gameadvisor.restapi.service;
 
+import inz.gameadvisor.restapi.misc.CPUList;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.Companies;
@@ -17,15 +18,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -124,7 +129,7 @@ public class AdminService extends CustomFunctions {
         if(company.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
         }
-        int score = addCPU.getScore();
+        float score = addCPU.getScore();
 
         if(!name.isBlank()){
             if(checkIfSameRecordExists("name","cpu",name)){
@@ -184,7 +189,7 @@ public class AdminService extends CustomFunctions {
 
             String name = editCPU.getName();
             String series = editCPU.getSeries();
-            int score = editCPU.getScore();
+            float score = editCPU.getScore();
 
             if(!name.isBlank()){
                 if(!checkIfSameRecordExists("name","cpu",name)){
@@ -257,7 +262,7 @@ public class AdminService extends CustomFunctions {
         if(company.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
         }
-        int score = addGPU.getScore();
+        float score = addGPU.getScore();
 
         if(!name.isBlank()){
             if(checkIfSameRecordExists("name","gpu",name)){
@@ -317,7 +322,7 @@ public class AdminService extends CustomFunctions {
 
             String name = editGPU.getName();
             String series = editGPU.getSeries();
-            int score = editGPU.getScore();
+            float score = editGPU.getScore();
 
             if(!name.isBlank()){
                 if(!checkIfSameRecordExists("name","gpu",name)){
@@ -502,5 +507,127 @@ public class AdminService extends CustomFunctions {
         gameRepository.save(game);
 
         return responseFromServer(HttpStatus.OK,request,"Game has been saved");
+    }
+
+    //Seeder
+    public ResponseEntity<Object> populateCPU(String token, HttpServletRequest request){
+        if(!isUserAnAdmin(getUserIDFromToken(token))){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+        String filePath = System.getProperty("user.dir");
+        String fullPath = filePath+ "\\" + "cpus.csv";
+
+        File file = new File(fullPath);
+        List<CPUList> cpuList = new ArrayList<>();
+        try{
+            Scanner reader = new Scanner(file);
+            reader.nextLine();
+            while(reader.hasNextLine()){
+                String line = reader.nextLine();
+                String[] lines = line.split(",");
+
+                String producent = lines[2];
+                String model = lines[3];
+                String seria = "";
+
+                //Intel
+                if (producent.equals("Intel")){
+                    if(model.contains("Core2")){
+                        if(model.contains("Duo")){
+                            seria = model.substring(0,9);
+                        }
+                        else if(model.contains("Quad")){
+                            seria = model.substring(0,10);
+                        }
+                        else if(model.contains("Extreme")){
+                            seria = model.substring(0,13);
+                        }
+                        else{
+                            seria = model.substring(0,5);
+                        }
+                    }
+                    else if(model.contains("Core")) {
+                        if(model.contains("Duo")){
+                            seria = model.substring(0,8);
+                        }
+                        else {
+                            seria = model.substring(0,7);
+                        }
+                    }
+                    else if(model.contains("Xeon")){
+                        seria = model.substring(0,7);
+                    }
+                    else if(model.contains("Celeron")){
+                        if(model.contains("D")){
+                            seria = model.substring(0,9);
+                        }
+                        else{
+                            seria = model.substring(0,7);
+                        }
+                    }
+                    else if (model.contains("Atom")){
+                        seria = model.replaceAll(" \\S.*","");
+                    }
+                    else if (model.contains("Pentium")){
+                        if(model.contains("4 ") || model.contains("M")){
+                            seria = model.substring(0,9);
+                        }
+                        else{
+                            seria = model.substring(0,7);
+                        }
+                    }
+                }
+                //AMD
+                else if (producent.equals("AMD")){
+                    if(model.contains("Ryzen")){
+                        if(model.contains("TR")){
+                            seria = model.substring(0,8);
+                        }
+                        else{
+                            seria = model.substring(0,7);
+                        }
+                    }
+                    else{
+                        String[] nameExploded = model.split(" ");
+                        if (nameExploded[0].contains("-")){
+                            String[] secondExpload = nameExploded[0].split("-");
+                            seria = secondExpload[0];
+                        }
+                        else{
+                            try{
+                                if (nameExploded[1].contains("II") || nameExploded[1].contains("64"))
+                                    seria = nameExploded[0] + " " + nameExploded[1];
+                                else
+                                    seria = nameExploded[0];
+                            }
+                            catch (ArrayIndexOutOfBoundsException e){
+                                seria = "Other";
+                            }
+                        }
+                    }
+                }
+
+                float wynik = Float.parseFloat(lines[5]);
+
+                CPUList cpu = new CPUList(producent,seria,model,wynik);
+
+                cpuList.add(cpu);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        for (CPUList cpu:
+                cpuList) {
+            CPU cpu1 = new CPU();
+            Optional<Companies> companies = companiesRepository.findByName(cpu.getProducent());
+            cpu1.setCompany(companies.get());
+            cpu1.setName(cpu.getNazwa());
+            cpu1.setSeries(cpu.getSeria());
+            cpu1.setScore(cpu.getWynik());
+            cpuRepository.save(cpu1);
+        }
+
+        return responseFromServer(HttpStatus.OK,request,"Database has been seeded");
     }
 }

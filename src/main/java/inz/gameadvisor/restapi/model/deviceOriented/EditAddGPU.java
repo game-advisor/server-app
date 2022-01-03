@@ -9,5 +9,5 @@ public class EditAddGPU {
     private String name;
     private long manufID;
     private String series;
-    private int score;
+    private float score;
 }

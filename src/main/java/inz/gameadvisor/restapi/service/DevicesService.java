@@ -75,7 +75,7 @@ public class DevicesService extends CustomFunctions {
     public ResponseEntity<Object> getDeviceByID(long deviceID, String token, HttpServletRequest request){
         Optional<Devices> device = devicesRepository.findById(deviceID);
         if(device.isEmpty()){
-            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No such device found");
         }
         if(device.get().getUser().getUserID() != getUserIDFromToken(token)){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
@@ -271,14 +271,7 @@ public class DevicesService extends CustomFunctions {
         if(cpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU of such series found");
         }
-        List<CPUGPUName> cpuNameList = new ArrayList<>();
-        for (CPU cpu:
-                cpuList) {
-            CPUGPUName gpuName = new CPUGPUName();
-            gpuName.setName(cpu.getName());
-            cpuNameList.add(gpuName);
-        }
-        return new ResponseEntity<>(cpuNameList,HttpStatus.OK);
+        return new ResponseEntity<>(cpuList,HttpStatus.OK);
     }
 
     public ResponseEntity<Object> getAllGPUListBySeries(String series, HttpServletRequest request){
@@ -286,14 +279,7 @@ public class DevicesService extends CustomFunctions {
         if(gpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU of such series found");
         }
-        List<CPUGPUName> gpuNameList = new ArrayList<>();
-        for (GPU gpu:
-                gpuList) {
-            CPUGPUName gpuName = new CPUGPUName();
-            gpuName.setName(gpu.getName());
-            gpuNameList.add(gpuName);
-        }
-        return new ResponseEntity<>(gpuNameList,HttpStatus.OK);
+        return new ResponseEntity<>(gpuList,HttpStatus.OK);
     }
 
     public ResponseEntity<Object> getCPUSeriesByCompany(String companyName, HttpServletRequest request){
@@ -338,5 +324,25 @@ public class DevicesService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU found for given company name");
         }
         return new ResponseEntity<>(gpuSeriesList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getCPUInfoByModelName(String model, HttpServletRequest request) {
+        Optional<CPU> cpu = cpuRepository.findByName(model);
+        if(cpu.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU by such name found");
+        }
+        return new ResponseEntity<>(cpu.get(),HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getOSByCompanyName(String companyName, HttpServletRequest request) {
+        Optional<Companies> companies = companiesRepository.findByName(companyName);
+        if(companies.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No company with such name found");
+        }
+        List<Optional<OS>> osList = osRepository.findAllByCompany(companies.get());
+        if(osList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No OS found under this company");
+        }
+        return new ResponseEntity<>(osList,HttpStatus.OK);
     }
 }

@@ -3,6 +3,7 @@ package inz.gameadvisor.restapi.controller;
 import inz.gameadvisor.restapi.model.deviceOriented.EditAddCPU;
 import inz.gameadvisor.restapi.model.deviceOriented.EditAddOS;
 import inz.gameadvisor.restapi.service.AdminService;
+import inz.gameadvisor.restapi.service.DevicesService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 public class OSController {
 
     private final AdminService adminService;
+    private final DevicesService devicesService;
 
     @PostMapping("/api/admin/os/add")
     @ApiResponses(value = {
@@ -59,5 +61,15 @@ public class OSController {
                                            HttpServletRequest request,
                                            @ApiIgnore @RequestHeader("Authorization") String token){
         return adminService.deleteOS(id, request, token);
+    }
+
+    @GetMapping("/api/os/{company_name}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    public ResponseEntity<Object> getOSByCompanyName(@PathVariable("company_name") String companyName,
+                                                     HttpServletRequest request){
+        return devicesService.getOSByCompanyName(companyName,request);
     }
 }

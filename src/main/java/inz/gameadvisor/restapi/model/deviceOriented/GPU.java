@@ -24,5 +24,5 @@ public class GPU {
 
     private String series;
 
-    private int score;
+    private float score;
 }

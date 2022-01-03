@@ -23,5 +23,5 @@ public class CPU {
 
     private String series;
 
-    private int score;
+    private float score;
 }

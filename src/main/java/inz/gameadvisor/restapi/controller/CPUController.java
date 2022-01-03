@@ -73,6 +73,16 @@ public class CPUController {
         return devicesService.getAllCPUListBySeries(series,request);
     }
 
+    @GetMapping("/api/cpu/{cpu_model_name}/modelInfo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    public ResponseEntity<Object> getCPUInfoByModelName(@PathVariable("cpu_model_name") String model,
+                                                        HttpServletRequest request){
+        return devicesService.getCPUInfoByModelName(model,request);
+    }
+
     @GetMapping("/api/cpu/series/{company_name}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),

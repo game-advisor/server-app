@@ -65,4 +65,15 @@ public class AdminController {
                                                     HttpServletRequest request){
         return adminService.getAllDevicesList(pageNumber,pageSize,sortBy,token, request);
     }
+
+    @PostMapping("/api/admin/cpu/seed")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "No devices found")
+    })
+    public ResponseEntity<Object> populateCPU(@ApiIgnore @RequestHeader("Authorization") String token,
+                                              HttpServletRequest request){
+        return adminService.populateCPU(token,request);
+    }
 }

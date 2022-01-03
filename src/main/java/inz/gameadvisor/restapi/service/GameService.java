@@ -2,8 +2,10 @@ package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.model.gameOriented.Game;
+import inz.gameadvisor.restapi.model.gameOriented.Tag;
 import inz.gameadvisor.restapi.repository.GameRepository;
 import inz.gameadvisor.restapi.repository.ReviewRepository;
+import inz.gameadvisor.restapi.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class GameService extends CustomFunctions {
 
     private final GameRepository gameRepository;
+    private final TagRepository tagRepository;
     private final FileStorageService fileStorageService;
     private final ReviewRepository reviewRepository;
 
@@ -82,4 +85,14 @@ public class GameService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Game was not found");
         }
     }
+
+    public ResponseEntity<Object> listAllTags(HttpServletRequest request){
+        List<Tag> tagList = tagRepository.findAll();
+        if(tagList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No tags found");
+        }
+        return new ResponseEntity<>(tagList,HttpStatus.OK);
+    }
+
+
 }
