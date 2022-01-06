@@ -1,6 +1,10 @@
 package inz.gameadvisor.restapi.controller;
 
+import inz.gameadvisor.restapi.misc.PublishDates;
 import inz.gameadvisor.restapi.model.gameOriented.EditAddGame;
+import inz.gameadvisor.restapi.model.gameOriented.Game;
+import inz.gameadvisor.restapi.model.gameOriented.GameAndTags;
+import inz.gameadvisor.restapi.model.gameOriented.Tag;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.service.AdminService;
 import inz.gameadvisor.restapi.service.GameService;
@@ -18,6 +22,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -36,6 +41,48 @@ public class GameController {
     public ResponseEntity<Object> getGamesWithName(@PathVariable("game_name") String name,
                                                    HttpServletRequest request){
         return gameService.getGamesByName(name, request);
+    }
+
+    @GetMapping("/api/games/datePublished")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Games not found")
+    })
+    public ResponseEntity<Object> getGamesByDatePublished(@RequestBody PublishDates publishDates,
+                                                          HttpServletRequest request){
+        return gameService.getGamesByDatePublished(publishDates, request);
+    }
+
+    @GetMapping("/api/games/{company_name}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Games not found")
+    })
+    public ResponseEntity<Object> getGamesByCompanyName(@PathVariable("company_name")String companyName,
+                                                          HttpServletRequest request){
+        return gameService.getGamesByCompanyName(companyName, request);
+    }
+
+    @GetMapping("/api/tags/{game_id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Tags not found")
+    })
+    public ResponseEntity<Object> getGameTags(@PathVariable("game_id")long gameID,
+                                                        HttpServletRequest request){
+        return gameService.getGameTags(gameID, request);
+    }
+
+    @GetMapping("/api/game/getByTagsAndCompany/{company_id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400",description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Tags not found")
+    })
+    public ResponseEntity<Object> getGamesByTagsAndCompany(@RequestParam String tags,
+                                                          @PathVariable("company_id") long companyID,
+                                                          HttpServletRequest request){
+        return gameService.getGamesByTagsAndCompany(tags, companyID, request);
     }
 
     @GetMapping("/api/game/{game_id}/review/count")
@@ -75,5 +122,6 @@ public class GameController {
     public ResponseEntity<Object> listAllTags(HttpServletRequest request){
         return gameService.listAllTags(request);
     }
+
 
 }

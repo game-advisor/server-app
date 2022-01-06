@@ -35,4 +35,13 @@ public class Game {
     @ManyToMany(mappedBy = "likedGames")
     @JsonIgnore
     Set<User> like;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "game_has_tags",
+            joinColumns = @JoinColumn(name = "game_gameID"),
+            inverseJoinColumns = @JoinColumn(name = "tags_tagID")
+    )
+    @JsonIgnore
+    Set<Tag> gameTags;
 }

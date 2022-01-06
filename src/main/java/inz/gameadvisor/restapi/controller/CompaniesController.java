@@ -38,4 +38,13 @@ public class CompaniesController extends CustomFunctions {
                                                  HttpServletRequest request){
         return companiesService.getCompanyInfoByName(name,request);
     }
+
+    @GetMapping("/api/company/getGameCompanies")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No companies found")
+    })
+    public ResponseEntity<Object> getGameCompanies(HttpServletRequest request){
+        return companiesService.getGameCompanies(request);
+    }
 }

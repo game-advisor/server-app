@@ -22,4 +22,8 @@ public class Tag {
     @ManyToMany(mappedBy = "favTags")
     @JsonIgnore
     Set<User> likeTags;
+
+    @ManyToMany(mappedBy = "gameTags")
+    @JsonIgnore
+    Set<Game> gameHasTags;
 }

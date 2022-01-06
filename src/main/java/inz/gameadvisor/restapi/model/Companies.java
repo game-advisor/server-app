@@ -15,4 +15,6 @@ public class Companies {
     private long companyID;
 
     private String name;
+
+    private int isGameDev;
 }

@@ -271,7 +271,15 @@ public class DevicesService extends CustomFunctions {
         if(cpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU of such series found");
         }
-        return new ResponseEntity<>(cpuList,HttpStatus.OK);
+        List<CPUGPUName> cpuNames = new ArrayList<>();
+        for (CPU cpu:
+             cpuList) {
+            CPUGPUName cpuName = new CPUGPUName();
+            cpuName.setName(cpu.getName());
+            cpuNames.add(cpuName);
+        }
+        cpuNames.sort(Comparator.comparing(CPUGPUName::getName));
+        return new ResponseEntity<>(cpuNames,HttpStatus.OK);
     }
 
     public ResponseEntity<Object> getAllGPUListBySeries(String series, HttpServletRequest request){
@@ -279,7 +287,15 @@ public class DevicesService extends CustomFunctions {
         if(gpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU of such series found");
         }
-        return new ResponseEntity<>(gpuList,HttpStatus.OK);
+        List<CPUGPUName> gpuNames = new ArrayList<>();
+        for (GPU gpu:
+                gpuList) {
+            CPUGPUName gpuName = new CPUGPUName();
+            gpuName.setName(gpu.getName());
+            gpuNames.add(gpuName);
+        }
+        gpuNames.sort(Comparator.comparing(CPUGPUName::getName));
+        return new ResponseEntity<>(gpuNames,HttpStatus.OK);
     }
 
     public ResponseEntity<Object> getCPUSeriesByCompany(String companyName, HttpServletRequest request){
@@ -345,4 +361,6 @@ public class DevicesService extends CustomFunctions {
         }
         return new ResponseEntity<>(osList,HttpStatus.OK);
     }
+
+
 }

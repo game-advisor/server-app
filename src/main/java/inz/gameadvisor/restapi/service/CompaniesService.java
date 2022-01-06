@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,5 +34,13 @@ public class CompaniesService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
         }
         return new ResponseEntity<>(company,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getGameCompanies(HttpServletRequest request) {
+        List<Companies> gameDevCompanies = companiesRepository.findByIsGameDev(boolToInt(true));
+        if(gameDevCompanies.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No companies found");
+        }
+        return new ResponseEntity<>(gameDevCompanies.toArray(),HttpStatus.OK);
     }
 }
