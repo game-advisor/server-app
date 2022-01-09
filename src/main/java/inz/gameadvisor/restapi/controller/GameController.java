@@ -80,8 +80,8 @@ public class GameController {
             @ApiResponse(responseCode = "404", description = "Tags not found")
     })
     public ResponseEntity<Object> getGamesByTagsAndCompany(@RequestParam String tags,
-                                                          @PathVariable("company_id") long companyID,
-                                                          HttpServletRequest request){
+                                                           @PathVariable("company_id") long companyID,
+                                                           HttpServletRequest request){
         return gameService.getGamesByTagsAndCompany(tags, companyID, request);
     }
 
