@@ -1,7 +1,6 @@
 package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
-import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.userOriented.LoginCredentials;
 import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
 import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
@@ -20,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
@@ -73,6 +71,14 @@ public class UserController extends CustomFunctions {
     public ResponseEntity<Object> register(@RequestBody RegisterCredentials registerCredentials,
                                            HttpServletRequest request){
         return userService.register(registerCredentials, request);
+    }
+
+    @DeleteMapping("/api/user/delete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401",description = "Unauthorized")
+    })
+    public ResponseEntity<Object> deleteUser(@ApiIgnore @RequestHeader("Authorization") String token, HttpServletRequest request){
+        return userService.deleteUser(token,request);
     }
 
     @GetMapping("/api/user/{user_id}/avatar")
@@ -128,7 +134,8 @@ public class UserController extends CustomFunctions {
     @PostMapping("/api/user/favTags/{tag_id}/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "No tag found")
+            @ApiResponse(responseCode = "404", description = "No tag found"),
+            @ApiResponse(responseCode = "409", description = "Tag already in favorites")
     })
     public ResponseEntity<Object> addTagToFavorites(@PathVariable("tag_id") long tagID,
                                                      @ApiIgnore @RequestHeader("Authorization") String token,
@@ -159,7 +166,8 @@ public class UserController extends CustomFunctions {
     @PostMapping("/api/user/favGames/{game_id}/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "No game found")
+            @ApiResponse(responseCode = "404", description = "No game found"),
+            @ApiResponse(responseCode = "409", description = "Game already in favorites")
     })
     public ResponseEntity<Object> addGameToFavorites(@PathVariable("game_id") long gameID,
                                                      @ApiIgnore @RequestHeader("Authorization") String token,

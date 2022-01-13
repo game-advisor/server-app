@@ -2,28 +2,17 @@ package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.misc.PublishDates;
 import inz.gameadvisor.restapi.model.gameOriented.EditAddGame;
-import inz.gameadvisor.restapi.model.gameOriented.Game;
-import inz.gameadvisor.restapi.model.gameOriented.GameAndTags;
-import inz.gameadvisor.restapi.model.gameOriented.Tag;
-import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.service.AdminService;
+import inz.gameadvisor.restapi.service.DevicesService;
 import inz.gameadvisor.restapi.service.GameService;
-import io.swagger.models.Response;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -32,6 +21,7 @@ public class GameController {
 
     private final GameService gameService;
     private final AdminService adminService;
+    private final DevicesService devicesService;
 
     @GetMapping("/api/game/{game_name}")
     @ApiResponses(value = {
@@ -123,5 +113,14 @@ public class GameController {
         return gameService.listAllTags(request);
     }
 
-
+    @PostMapping("/api/gameRequirementsCompare/{game_ID}/{user_deviceID}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> compareDeviceWithGameRequirements(@PathVariable("game_ID") long gameID,
+                                                                    @PathVariable("user_deviceID") long deviceID,
+                                                                    HttpServletRequest request){
+        return devicesService.compareDeviceWithGameRequirements(deviceID,gameID,request);
+    }
 }

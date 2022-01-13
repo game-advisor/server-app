@@ -2,7 +2,7 @@ package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CPUList;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
-import inz.gameadvisor.restapi.misc.CustomRepsonses;
+import inz.gameadvisor.restapi.misc.GPUList;
 import inz.gameadvisor.restapi.model.Companies;
 import inz.gameadvisor.restapi.model.deviceOriented.*;
 import inz.gameadvisor.restapi.model.gameOriented.EditAddGame;
@@ -18,19 +18,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Date;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -163,6 +158,7 @@ public class AdminService extends CustomFunctions {
         }
         return responseFromServer(HttpStatus.OK,request,"CPU has been saved");
     }
+
     @Transactional
     public ResponseEntity<Object> editCPU(long id, EditAddCPU editCPU, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
@@ -222,6 +218,7 @@ public class AdminService extends CustomFunctions {
         }
         return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
     }
+
     public ResponseEntity<Object> deleteCPU(long id, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
@@ -296,6 +293,7 @@ public class AdminService extends CustomFunctions {
         }
         return responseFromServer(HttpStatus.OK,request,"GPU has been saved");
     }
+
     @Transactional
     public ResponseEntity<Object> editGPU(long id, EditAddGPU editGPU, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
@@ -355,6 +353,7 @@ public class AdminService extends CustomFunctions {
         }
         return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"Record has not been updated");
     }
+
     public ResponseEntity<Object> deleteGPU(long id, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
@@ -417,6 +416,7 @@ public class AdminService extends CustomFunctions {
         return responseFromServer(HttpStatus.OK,request,"OS has been saved");
 
     }
+
     @Transactional
     public ResponseEntity<Object> editOS(long id, EditAddOS editOS, HttpServletRequest request, String token){
         if(!isUserAnAdmin(getUserIDFromToken(token))){
@@ -615,6 +615,7 @@ public class AdminService extends CustomFunctions {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"File not found");
         }
 
         for (CPUList cpu:
@@ -629,5 +630,1104 @@ public class AdminService extends CustomFunctions {
         }
 
         return responseFromServer(HttpStatus.OK,request,"Database has been seeded");
+    }
+
+    public ResponseEntity<Object> populateGPU(String token, HttpServletRequest request){
+        if(!isUserAnAdmin(getUserIDFromToken(token))){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+        String filePath = System.getProperty("user.dir");
+        String fullPath = filePath+ "\\" + "gpus.csv";
+
+        File file = new File(fullPath);
+        List<GPUList> gpuList = new ArrayList<>();
+        try{
+            Scanner reader = new Scanner(file);
+            reader.nextLine();
+            while(reader.hasNextLine()){
+                String line = reader.nextLine();
+                String[] lines = line.split(",");
+
+                String producent = lines[2];
+                String model = lines[3];
+                String seria = "";
+
+                //nVidia
+                if(producent.equals("Nvidia")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                        else if(model.contains("Titan"))
+                            seria = "Titan RTX";
+                        else if(model.contains("Quadro")){
+                            seria = "Quadro RTX";
+                        }
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("Quadro")){
+                        producent = "nVidia";
+                        seria = "Quadro";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                }
+                //AMD
+                else if(producent.equals("AMD")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("Zotac")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("HD 4")){
+                            producent = "AMD";
+                            seria = "HD 4000";
+                        }
+                        else if(model.contains("HD 5")){
+                            producent = "AMD";
+                            seria = "HD 5000";
+                        }
+                        else if(model.contains("HD 6")){
+                            producent = "AMD";
+                            seria = "HD 6000";
+                        }
+                        else if(model.contains("HD 7")){
+                            producent = "AMD";
+                            seria = "HD 7000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("PNY")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("Asus")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("MSI")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30")){
+                            seria = "GeForce RTX 30";
+                        }
+                        else if(model.contains("RTX 20")){
+                            seria = "GeForce RTX 20";
+                        }
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("Gigabyte")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30")){
+                            seria = "GeForce RTX 30";
+                        }
+                        else if(model.contains("RTX 20")){
+                            seria = "GeForce RTX 20";
+                        }
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("EVGA")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("TITAN") || model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("Gainward")){
+                    if(model.contains("RTX")){
+                        producent = "nVidia";
+                        if(model.contains("RTX 30"))
+                            seria = "GeForce RTX 30";
+                        else if(model.contains("RTX 20"))
+                            seria = "GeForce RTX 20";
+                    }
+                    else if(model.contains("Titan")){
+                        producent = "nVidia";
+                        seria = "Titan";
+                    }
+                    else if(model.contains("GTX")){
+                        producent = "nVidia";
+                        if(model.contains("GTX 10"))
+                            seria = "GeForce GTX 10";
+                        else if(model.contains("GTX 16")){
+                            seria = "GeForce GTX 16";
+                        }
+                        else if(model.contains("Titan")){
+                            producent = "nVidia";
+                            seria = "Titan";
+                        }
+                        else if(model.contains("GTX 9"))
+                            seria = "GeForce GTX 9";
+                        else if(model.contains("GTX 7"))
+                            seria = "GeForce GTX 7";
+                        else if(model.contains("GTX 6"))
+                            seria = "GeForce GTX 6";
+                        else if(model.contains("GTX 5"))
+                            seria = "GeForce GTX 5";
+                        else if(model.contains("GTX 4"))
+                            seria = "GeForce GTX 4";
+                    }
+                    else if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("Sapphire")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("PowerColor")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("XFX")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("ASRock")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else if(producent.equals("PwrHis")){
+                    if(model.contains("RX")){
+                        producent = "AMD";
+                        if(model.contains("RX 5")){
+                            if(model.contains("5300") || model.contains("5500") || model.contains("5600") || model.contains("5700")){
+                                seria = "RX 5000";
+                            }
+                            else if(model.contains("550") || model.contains("560") || model.contains("570") || model.contains("580") || model.contains("590")){
+                                seria = "RX 500";
+                            }
+                        }
+                        else if(model.contains("RX 4")){
+                            if(model.contains("460") || model.contains("470") || model.contains("480") || model.contains("490")){
+                                seria = "RX 400";
+                            }
+                        }
+                        else if(model.contains("RX 6")){
+                            seria = "RX 6000";
+                        }
+                        else if(model.contains("Vega")){
+                            if(model.contains("56")){
+                                seria = "RX Vega 56";
+                            }
+                            else if(model.contains("64")){
+                                seria = "RX Vega 64";
+                            }
+                        }
+                    }
+                    else if(model.contains("HD 4")){
+                        producent = "AMD";
+                        seria = "HD 4000";
+                    }
+                    else if(model.contains("HD 5")){
+                        producent = "AMD";
+                        seria = "HD 5000";
+                    }
+                    else if(model.contains("HD 6")){
+                        producent = "AMD";
+                        seria = "HD 6000";
+                    }
+                    else if(model.contains("HD 7")){
+                        producent = "AMD";
+                        seria = "HD 7000";
+                    }
+                    else if(model.contains("R9")){
+                        producent = "AMD";
+                        seria = "R9";
+                    }
+                    else if(model.contains("R7")){
+                        producent = "AMD";
+                        seria = "R7";
+                    }
+                    else if(model.contains("R5")){
+                        producent = "AMD";
+                        seria = "R5";
+                    }
+                    else
+                        producent = "Other";
+                }
+                else {
+                    producent = "Other";
+                    seria = "";
+                }
+                float wynik = Float.parseFloat(lines[5]);
+
+                GPUList gpu = new GPUList(producent,seria,model,wynik);
+
+                gpuList.add(gpu);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"File not found");
+        }
+
+        for (GPUList gpu:
+                gpuList) {
+            GPU gpu1 = new GPU();
+            Optional<Companies> companies = companiesRepository.findByName(gpu.getProducent());
+            if(companies.isEmpty()){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of name " + gpu.getProducent() + " not found");
+            }
+            gpu1.setCompany(companies.get());
+            gpu1.setName(gpu.getNazwa());
+            gpu1.setSeries(gpu.getSeria());
+            gpu1.setScore(gpu.getWynik());
+            gpuRepository.save(gpu1);
+        }
+        return responseFromServer(HttpStatus.OK,request,"GPU table has been seeded");
     }
 }

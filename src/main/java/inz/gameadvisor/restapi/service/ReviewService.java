@@ -1,7 +1,6 @@
 package inz.gameadvisor.restapi.service;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
-import inz.gameadvisor.restapi.misc.CustomRepsonses;
 import inz.gameadvisor.restapi.model.gameOriented.Game;
 import inz.gameadvisor.restapi.model.reviewOriented.AddReview;
 import inz.gameadvisor.restapi.model.reviewOriented.Review;
@@ -10,15 +9,11 @@ import inz.gameadvisor.restapi.repository.GameRepository;
 import inz.gameadvisor.restapi.repository.ReviewRepository;
 import inz.gameadvisor.restapi.repository.ScoreRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.apache.tomcat.util.codec.binary.Base64;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Optional;
 

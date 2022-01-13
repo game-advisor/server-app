@@ -10,5 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface OSRepository extends JpaRepository<OS,Long> {
-    List<Optional<OS>> findAllByCompany(Companies companies);
+    List<OS> findAllByCompany(Companies companies);
 }

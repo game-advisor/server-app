@@ -6,7 +6,6 @@ import inz.gameadvisor.restapi.service.DevicesService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -71,6 +70,16 @@ public class GPUController {
     public ResponseEntity<Object> getAllGPUListBySeries(@PathVariable("gpu_series") String series,
                                                         HttpServletRequest request){
         return devicesService.getAllGPUListBySeries(series,request);
+    }
+
+    @GetMapping("/api/gpu/{gpu_model_name}/modelInfo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    public ResponseEntity<Object> getGPUInfoByModelName(@PathVariable("gpu_model_name") String model,
+                                                        HttpServletRequest request){
+        return devicesService.getGPUInfoByModelName(model,request);
     }
 
     @GetMapping("/api/gpu/series/{company_name}")

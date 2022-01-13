@@ -3,6 +3,9 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.model.Companies;
 import inz.gameadvisor.restapi.model.deviceOriented.*;
+import inz.gameadvisor.restapi.model.gameOriented.Game;
+import inz.gameadvisor.restapi.model.gameOriented.GameRequirements;
+import inz.gameadvisor.restapi.model.gameOriented.GameRequirementsPass;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,8 @@ public class DevicesService extends CustomFunctions {
     private final OSRepository osRepository;
     private final UserRepository userRepository;
     private final CompaniesRepository companiesRepository;
+    private final GameRepository gameRepository;
+    private final GameRequirementsRepository gameRequirementsRepository;
 
     @PersistenceContext
     EntityManager em;
@@ -271,6 +276,7 @@ public class DevicesService extends CustomFunctions {
         if(cpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU of such series found");
         }
+        cpuList.sort(Comparator.comparing(CPU::getScore));
         List<CPUGPUName> cpuNames = new ArrayList<>();
         for (CPU cpu:
              cpuList) {
@@ -278,7 +284,6 @@ public class DevicesService extends CustomFunctions {
             cpuName.setName(cpu.getName());
             cpuNames.add(cpuName);
         }
-        cpuNames.sort(Comparator.comparing(CPUGPUName::getName));
         return new ResponseEntity<>(cpuNames,HttpStatus.OK);
     }
 
@@ -287,6 +292,7 @@ public class DevicesService extends CustomFunctions {
         if(gpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU of such series found");
         }
+        gpuList.sort(Comparator.comparing(GPU::getScore));
         List<CPUGPUName> gpuNames = new ArrayList<>();
         for (GPU gpu:
                 gpuList) {
@@ -294,7 +300,7 @@ public class DevicesService extends CustomFunctions {
             gpuName.setName(gpu.getName());
             gpuNames.add(gpuName);
         }
-        gpuNames.sort(Comparator.comparing(CPUGPUName::getName));
+        //gpuNames.sort(Comparator.comparing(CPUGPUName::getName));
         return new ResponseEntity<>(gpuNames,HttpStatus.OK);
     }
 
@@ -350,17 +356,46 @@ public class DevicesService extends CustomFunctions {
         return new ResponseEntity<>(cpu.get(),HttpStatus.OK);
     }
 
+    public ResponseEntity<Object> getGPUInfoByModelName(String model, HttpServletRequest request) {
+        Optional<GPU> gpu = gpuRepository.findByName(model);
+        if(gpu.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No GPU by such name found");
+        }
+        return new ResponseEntity<>(gpu.get(),HttpStatus.OK);
+    }
+
     public ResponseEntity<Object> getOSByCompanyName(String companyName, HttpServletRequest request) {
         Optional<Companies> companies = companiesRepository.findByName(companyName);
         if(companies.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No company with such name found");
         }
-        List<Optional<OS>> osList = osRepository.findAllByCompany(companies.get());
+        List<OS> osList = osRepository.findAllByCompany(companies.get());
         if(osList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No OS found under this company");
         }
         return new ResponseEntity<>(osList,HttpStatus.OK);
     }
 
+    public ResponseEntity<Object> compareDeviceWithGameRequirements(long deviceID, long gameID, HttpServletRequest request){
+        Optional<Devices> device = devicesRepository.findById(deviceID);
+        if(device.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Device of given ID was not found");
+        }
+        Optional<GameRequirements> gameRequirements = gameRequirementsRepository.findGameRequirementsByGame_gameID(gameID);
+        if(gameRequirements.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game requirements or game of given ID was not found");
+        }
+        GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
+        if(device.get().getCpu().getScore() >= gameRequirements.get().getCpu().getScore())
+            gameRequirementsPass.setCpuOK(true);
+        if(device.get().getGpu().getScore() >= gameRequirements.get().getGpu().getScore())
+            gameRequirementsPass.setGpuOK(true);
+        if(device.get().getOs().getOsID() >= gameRequirements.get().getOs().getOsID())
+            gameRequirementsPass.setOsOK(true);
+        int deviceRamSize = device.get().getRam().getSize() * device.get().getRam().getAmountOfSticks();
+        if(deviceRamSize >= gameRequirements.get().getRamSizeReq())
+            gameRequirementsPass.setRamSizeOK(true);
+        return new ResponseEntity<>(gameRequirementsPass,HttpStatus.OK);
+    }
 
 }

@@ -165,6 +165,12 @@ public class UserService extends CustomFunctions {
         if(game.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Game not found");
         }
+        List<Game> favGames = gameRepository.findByLike_userID(getUserIDFromToken(token));
+        for (Game favGame : favGames) {
+            if(favGame.getGameID() == gameID){
+                return responseFromServer(HttpStatus.CONFLICT,request,"Game is already in your favorites");
+            }
+        }
         Query query = em.createNativeQuery("INSERT INTO favgames (userID,gameID) VALUES (?,?)")
                 .setParameter(1, getUserIDFromToken(token))
                 .setParameter(2, gameID);
@@ -213,6 +219,20 @@ public class UserService extends CustomFunctions {
                 .setParameter(1, tagID);
         query.executeUpdate();
         return responseFromServer(HttpStatus.OK,request,"Tag deleted from favorites");
+    }
+
+    public ResponseEntity<Object> deleteUser(String token, HttpServletRequest request) {
+        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"User was not found");
+        }
+        try{
+            userRepository.deleteById(getUserIDFromToken(token));
+        }
+        catch (Exception e){
+            return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
+        }
+        return responseFromServer(HttpStatus.OK,request,"Account deleted successfully");
     }
 }
 
