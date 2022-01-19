@@ -5,6 +5,7 @@ import inz.gameadvisor.restapi.model.gameOriented.EditAddGame;
 import inz.gameadvisor.restapi.service.AdminService;
 import inz.gameadvisor.restapi.service.DevicesService;
 import inz.gameadvisor.restapi.service.GameService;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -96,12 +97,30 @@ public class GameController {
 
     @PostMapping("/api/admin/game/add")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "401",description = "Unauthorized")
+            @ApiResponse(responseCode = "400",description = "Bad request"),
+            @ApiResponse(responseCode = "401",description = "Unauthorized"),
+            @ApiResponse(responseCode = "403",description = "Forbidden"),
+            @ApiResponse(responseCode = "404",description = "Not found")
     })
     public ResponseEntity<Object> addGame(@RequestBody EditAddGame addGame,
                                           HttpServletRequest request,
                                           @ApiIgnore @RequestHeader("Authorization") String token){
         return adminService.addGame(addGame,request,token);
+    }
+
+    @PutMapping("/api/admin/game/{game_id}/edit")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400",description = "Bad request"),
+            @ApiResponse(responseCode = "401",description = "Unauthorized"),
+            @ApiResponse(responseCode = "403",description = "Forbidden"),
+            @ApiResponse(responseCode = "404",description = "Not found"),
+            @ApiResponse(responseCode = "500",description = "Error while updating game")
+    })
+    public ResponseEntity<Object> editGame(@RequestBody EditAddGame editGame,
+                                           @PathVariable("game_id") long gameID,
+                                           HttpServletRequest request,
+                                           @ApiIgnore @RequestHeader("Authorization") String token){
+        return adminService.editGame(editGame,gameID,request,token);
     }
 
     @GetMapping("/api/tags")
@@ -113,14 +132,16 @@ public class GameController {
         return gameService.listAllTags(request);
     }
 
-    @PostMapping("/api/gameRequirementsCompare/{game_ID}/{user_deviceID}")
+    @PostMapping("/api/gameRequirementsCompare/{game_ID}/{user_deviceID}/{requirements_type}")
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Unauthorized"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No tag found")
     })
     public ResponseEntity<Object> compareDeviceWithGameRequirements(@PathVariable("game_ID") long gameID,
                                                                     @PathVariable("user_deviceID") long deviceID,
+                                                                    @PathVariable("requirements_type") String requirementsType,
                                                                     HttpServletRequest request){
-        return devicesService.compareDeviceWithGameRequirements(deviceID,gameID,request);
+        return devicesService.compareDeviceWithGameRequirements(requirementsType,deviceID,gameID,request);
     }
 }

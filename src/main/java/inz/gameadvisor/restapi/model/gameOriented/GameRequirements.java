@@ -19,6 +19,8 @@ public class GameRequirements {
 
     private String shortName;
 
+    private String type;
+
     @ManyToOne
     @JoinColumn(name = "cpuID",referencedColumnName = "cpuID")
     private CPU cpu;

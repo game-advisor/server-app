@@ -3,7 +3,6 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.model.Companies;
 import inz.gameadvisor.restapi.model.deviceOriented.*;
-import inz.gameadvisor.restapi.model.gameOriented.Game;
 import inz.gameadvisor.restapi.model.gameOriented.GameRequirements;
 import inz.gameadvisor.restapi.model.gameOriented.GameRequirementsPass;
 import inz.gameadvisor.restapi.model.userOriented.User;
@@ -376,24 +375,36 @@ public class DevicesService extends CustomFunctions {
         return new ResponseEntity<>(osList,HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> compareDeviceWithGameRequirements(long deviceID, long gameID, HttpServletRequest request){
+    public ResponseEntity<Object> compareDeviceWithGameRequirements(String requirementsType, long deviceID, long gameID, HttpServletRequest request){
         Optional<Devices> device = devicesRepository.findById(deviceID);
+        if(!requirementsType.equals("min") && !requirementsType.equals("max")){
+            return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
+        }
+        GameRequirements gameRequirements = new GameRequirements();
         if(device.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Device of given ID was not found");
         }
-        Optional<GameRequirements> gameRequirements = gameRequirementsRepository.findGameRequirementsByGame_gameID(gameID);
-        if(gameRequirements.isEmpty()){
+        List<GameRequirements> gameRequirementsList = gameRequirementsRepository.findGameRequirementsByGame_gameID(gameID);
+        if(gameRequirementsList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Game requirements or game of given ID was not found");
         }
+        for (GameRequirements gameReq : gameRequirementsList) {
+            if(gameReq.getType().equals("min") && requirementsType.equals("min")){
+                gameRequirements = gameReq;
+            }
+            else if(gameReq.getType().equals("max") && requirementsType.equals("max")){
+                gameRequirements = gameReq;
+            }
+        }
         GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
-        if(device.get().getCpu().getScore() >= gameRequirements.get().getCpu().getScore())
+        if(device.get().getCpu().getScore() >= gameRequirements.getCpu().getScore())
             gameRequirementsPass.setCpuOK(true);
-        if(device.get().getGpu().getScore() >= gameRequirements.get().getGpu().getScore())
+        if(device.get().getGpu().getScore() >= gameRequirements.getGpu().getScore())
             gameRequirementsPass.setGpuOK(true);
-        if(device.get().getOs().getOsID() >= gameRequirements.get().getOs().getOsID())
+        if(device.get().getOs().getOsID() >= gameRequirements.getOs().getOsID())
             gameRequirementsPass.setOsOK(true);
         int deviceRamSize = device.get().getRam().getSize() * device.get().getRam().getAmountOfSticks();
-        if(deviceRamSize >= gameRequirements.get().getRamSizeReq())
+        if(deviceRamSize >= gameRequirements.getRamSizeReq())
             gameRequirementsPass.setRamSizeOK(true);
         return new ResponseEntity<>(gameRequirementsPass,HttpStatus.OK);
     }

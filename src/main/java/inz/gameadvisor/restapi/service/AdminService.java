@@ -40,6 +40,7 @@ public class AdminService extends CustomFunctions {
     private final GPURepository gpuRepository;
     private final OSRepository osRepository;
     private final GameRepository gameRepository;
+    private final GameRequirementsRepository gameRequirementsRepository;
 
     @PersistenceContext
     EntityManager em;
@@ -507,6 +508,45 @@ public class AdminService extends CustomFunctions {
         gameRepository.save(game);
 
         return responseFromServer(HttpStatus.OK,request,"Game has been saved");
+    }
+
+    @Transactional
+    public ResponseEntity<Object> editGame(EditAddGame editGame, long gameID, HttpServletRequest request, String token){
+        if(!isUserAnAdmin(getUserIDFromToken(token))){
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+        if(Objects.isNull(editGame)){
+            return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
+        }
+
+        Optional<Game> game = gameRepository.findById(gameID);
+
+        if(game.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game of given ID was not found");
+        }
+
+        Optional<Companies> companies = companiesRepository.findById(editGame.getCompanyID());
+        if(companies.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given ID was not found");
+        }
+
+        if(!editGame.getName().isBlank()){
+            if(updateField("game","name",editGame.getName(),"gameID",String.valueOf(gameID)) == 0)
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error while updating field: name");
+        }
+        if(!editGame.getImagePath().isBlank()){
+            if(updateField("game","imagePath",editGame.getImagePath(),"gameID",String.valueOf(gameID)) == 0)
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error while updating field: imagePath");
+        }
+        if(editGame.getCompanyID() != game.get().getCompany().getCompanyID()){
+            if(updateField("game","devID",String.valueOf(editGame.getCompanyID()),"gameID",String.valueOf(gameID)) == 0)
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error while updating field: devID");
+        }
+        if(editGame.getPublishDate() != game.get().getPublishDate()){
+            if(updateField("game","publishDate",String.valueOf(editGame.getPublishDate()),"gameID",String.valueOf(gameID)) == 0)
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error while updating field: publishDate");
+        }
+        return responseFromServer(HttpStatus.OK,request,"Game updated successfully");
     }
 
     //Seeder
