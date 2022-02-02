@@ -34,7 +34,7 @@ public class GameController {
         return gameService.getGamesByName(name, request);
     }
 
-    @GetMapping("/api/games/datePublished")
+    @PostMapping("/api/games/getByDatePublished")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Games not found")
@@ -143,5 +143,16 @@ public class GameController {
                                                                     @PathVariable("requirements_type") String requirementsType,
                                                                     HttpServletRequest request){
         return devicesService.compareDeviceWithGameRequirements(requirementsType,deviceID,gameID,request);
+    }
+
+    @GetMapping("/api/games/recommend")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Unauthorized"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> gameRecommend(@ApiIgnore @RequestHeader("Authorization") String token,
+                                                HttpServletRequest request){
+        return gameService.gameRecommend(token,request);
     }
 }

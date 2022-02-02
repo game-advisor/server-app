@@ -183,4 +183,9 @@ public class GameService extends CustomFunctions {
         }
         return new ResponseEntity<>(gameAndTagsList.toArray(),HttpStatus.OK);
     }
+
+    public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
+        long userID = getUserIDFromToken(token);
+        return null;
+    }
 }
