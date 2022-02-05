@@ -61,18 +61,17 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     }
 
-    @SneakyThrows
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) throws TokenExpiredException {
         String token = request.getHeader(TOKEN_HEADER);
         String userName;
         if (token != null) {
             userName = JWT.require(Algorithm.HMAC256(secret))
                     .build()
-                    .verify(token) // 5
-                    .getSubject(); // 6
+                    .verify(token)
+                    .getSubject();
             if (userName != null) {
                 MyUserDetails MyUserDetails = (inz.gameadvisor.restapi.misc.MyUserDetails) userDetailsService.loadUserByUsername(userName);
-                return new UsernamePasswordAuthenticationToken(MyUserDetails.getUsername(), null, MyUserDetails.getAuthorities()); // 8
+                return new UsernamePasswordAuthenticationToken(MyUserDetails.getUsername(), null, MyUserDetails.getAuthorities());
             }
         }
         return null;

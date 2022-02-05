@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface CompaniesRepository extends JpaRepository<Companies,Long> {
     Optional<Companies> findByName(String name);
-    Optional<Companies> findByNameContaining(String name);
+    List<Companies> findByNameContaining(String name);
     List<Companies> findByIsGameDev(int isGameDev);
 }

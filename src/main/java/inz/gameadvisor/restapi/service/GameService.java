@@ -3,9 +3,7 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.PublishDates;
 import inz.gameadvisor.restapi.model.Companies;
-import inz.gameadvisor.restapi.model.gameOriented.Game;
-import inz.gameadvisor.restapi.model.gameOriented.GameAndTags;
-import inz.gameadvisor.restapi.model.gameOriented.Tag;
+import inz.gameadvisor.restapi.model.gameOriented.*;
 import inz.gameadvisor.restapi.repository.CompaniesRepository;
 import inz.gameadvisor.restapi.repository.GameRepository;
 import inz.gameadvisor.restapi.repository.ReviewRepository;
@@ -123,13 +121,24 @@ public class GameService extends CustomFunctions {
         if(Objects.isNull(companyName) || companyName.isBlank()){
             return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
         }
-        Optional<Companies> company = companiesRepository.findByNameContaining(companyName);
-        if(company.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given name not found");
+        List<Companies> companiesList  = companiesRepository.findByNameContaining(companyName);
+        if(companiesList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No companies found for name " + companyName);
         }
-        List<Game> gameList = gameRepository.findByCompany(company.get());
-        if(gameList.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found for given company");
+        List<GamesList> gameList = new ArrayList<>();
+        for (Companies company : companiesList) {
+            if(company.getIsGameDev() == boolToInt(true)){
+                if(gameRepository.findByCompany(company).size() != 0){
+                    GamesList gameListItem = new GamesList();
+                    gameListItem.setCompanyName(company.getName());
+                    gameListItem.setGameList(gameRepository.findByCompany(company));
+                    gameList.add(gameListItem);
+                }
+            }
+
+        }
+        if(gameList.size() == 0){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found for company name " + companyName);
         }
         return new ResponseEntity<>(gameList.toArray(),HttpStatus.OK);
     }
@@ -156,33 +165,104 @@ public class GameService extends CustomFunctions {
                 listOfTagsFromRequest.add(tagOptional.get());
             }
         }
-        Optional<Companies> company = companiesRepository.findById(companyID);
-        if(company.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given ID was not found");
-        }
-        if(company.get().getIsGameDev() == 0){
-            return responseFromServer(HttpStatus.BAD_REQUEST,request,"Company is not a game developer");
-        }
-        List<Game> gameList = gameRepository.findByCompany(company.get());
-        if(gameList.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found for that company");
-        }
-        List<GameAndTags> gameAndTagsList = new ArrayList<>();
-        for (Game game:
-             gameList) {
-            GameAndTags gameAndTags = new GameAndTags();
-            List<Tag> currentGameTags = new ArrayList<>(game.getGameTags());
-            currentGameTags.sort(Comparator.comparing(Tag::getTagID));
-            if(currentGameTags.stream().anyMatch(listOfTagsFromRequest::contains)){
-                gameAndTags.setTags(currentGameTags);
+        if(companyID == 0){
+            List<Game> gameList = gameRepository.findAll();
+            List<GameAndTags> gameAndTagsList = new ArrayList<>();
+            for (Game game:
+                    gameList) {
+                GameAndTags gameAndTags = new GameAndTags();
+                List<Tag> currentGameTags = new ArrayList<>(game.getGameTags());
+                currentGameTags.sort(Comparator.comparing(Tag::getTagID));
+                if(currentGameTags.stream().anyMatch(listOfTagsFromRequest::contains)){
+                    gameAndTags.setTags(currentGameTags);
+                    gameAndTags.setGame(game);
+                    gameAndTagsList.add(gameAndTags);
+                }
             }
-            else
-                return responseFromServer(HttpStatus.NOT_FOUND,request,"No game found for given tags");
-            gameAndTags.setGame(game);
-            gameAndTagsList.add(gameAndTags);
+            return new ResponseEntity<>(gameAndTagsList.toArray(),HttpStatus.OK);
         }
-        return new ResponseEntity<>(gameAndTagsList.toArray(),HttpStatus.OK);
+        else{
+            Optional<Companies> company = companiesRepository.findById(companyID);
+            if(company.isEmpty()){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of given ID was not found");
+            }
+            if(company.get().getIsGameDev() == 0){
+                return responseFromServer(HttpStatus.BAD_REQUEST,request,"Company is not a game developer");
+            }
+            List<Game> gameList = gameRepository.findByCompany(company.get());
+            if(gameList.isEmpty()){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found for that company");
+            }
+            List<GameAndTags> gameAndTagsList = new ArrayList<>();
+            for (Game game:
+                    gameList) {
+                GameAndTags gameAndTags = new GameAndTags();
+                List<Tag> currentGameTags = new ArrayList<>(game.getGameTags());
+                currentGameTags.sort(Comparator.comparing(Tag::getTagID));
+                if(currentGameTags.stream().anyMatch(listOfTagsFromRequest::contains)){
+                    gameAndTags.setTags(currentGameTags);
+                }
+                else
+                    return responseFromServer(HttpStatus.NOT_FOUND,request,"No game found for given tags");
+                gameAndTags.setGame(game);
+                gameAndTagsList.add(gameAndTags);
+            }
+            return new ResponseEntity<>(gameAndTagsList.toArray(),HttpStatus.OK);
+        }
     }
+
+    @Transactional
+    public ResponseEntity<Object> getGamesByCompaniesAndTags(String tags, String companiesIDs, HttpServletRequest request){
+        String[] tagsSplit = tags.split(",");
+        List<Tag> listOfTagsFromRequest = new ArrayList<>();
+        for (String tag:
+                tagsSplit) {
+            Optional<Tag> tagOptional = tagRepository.findByName(tag);
+            if(tagOptional.isEmpty()){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"No tag called: " + tag +" found");
+            }
+            else{
+                listOfTagsFromRequest.add(tagOptional.get());
+            }
+        }
+        String[] IDsSplit = companiesIDs.split(",");
+        List<Long> listOfCompaniesIDs = new ArrayList<>();
+        for (String id:
+                IDsSplit) {
+            listOfCompaniesIDs.add(Long.parseLong(id));
+        }
+
+        List<Companies> companiesList = new ArrayList<>();
+        for (Long id : listOfCompaniesIDs) {
+            Optional<Companies> optionalCompany = companiesRepository.findById(id);
+            if(optionalCompany.isEmpty()){
+                return responseFromServer(HttpStatus.NOT_FOUND,request,"Company of ID: " + id + " was not found");
+            }
+            if(optionalCompany.get().getIsGameDev() == boolToInt(true))
+                companiesList.add(optionalCompany.get());
+        }
+
+        List<CompanyAndGamesAndTags> companyAndGamesAndTagsList = new ArrayList<>();
+
+        for (Companies company : companiesList) {
+            CompanyAndGamesAndTags companyAndGamesAndTags = new CompanyAndGamesAndTags();
+            List<Game> gameList = gameRepository.findByCompany(company);
+            for (Game game : gameList) {
+                List<Tag> currentGameTags = new ArrayList<>(game.getGameTags());
+                if(currentGameTags.stream().anyMatch(listOfTagsFromRequest::contains)){
+                    companyAndGamesAndTags.setTagList(currentGameTags);
+                    companyAndGamesAndTags.setGame(game);
+                    companyAndGamesAndTags.setCompanyName(company.getName());
+                    companyAndGamesAndTagsList.add(companyAndGamesAndTags);
+                }
+            }
+        }
+        if(companyAndGamesAndTagsList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No game found for given IDs: " + companiesIDs + " and tags: " + tags);
+        }
+        return new ResponseEntity<>(companyAndGamesAndTagsList.toArray(),HttpStatus.OK);
+    }
+
 
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
         long userID = getUserIDFromToken(token);

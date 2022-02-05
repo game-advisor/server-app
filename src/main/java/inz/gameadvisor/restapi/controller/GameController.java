@@ -76,6 +76,19 @@ public class GameController {
         return gameService.getGamesByTagsAndCompany(tags, companyID, request);
     }
 
+    @GetMapping("/api/game/getByCompaniesAndTags/")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400",description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Tags not found")
+    })
+    public ResponseEntity<Object> getGamesByCompaniesAndTags(@RequestParam String tags,
+                                                           @RequestParam String companiesIDs,
+                                                           HttpServletRequest request){
+        return gameService.getGamesByCompaniesAndTags(tags, companiesIDs, request);
+    }
+
+
     @GetMapping("/api/game/{game_id}/review/count")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),

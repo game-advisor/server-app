@@ -57,7 +57,7 @@ public class OSController {
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "500", description = "Internal error occurred when deleting record")
     })
-    public ResponseEntity<Object> deleteOS(@PathVariable("id") long id,
+    public ResponseEntity<Object> deleteOS(@PathVariable("os_id") long id,
                                            HttpServletRequest request,
                                            @ApiIgnore @RequestHeader("Authorization") String token){
         return adminService.deleteOS(id, request, token);
