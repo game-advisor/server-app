@@ -46,7 +46,7 @@ public class GameService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found");
         }
         else{
-            return new ResponseEntity<>(gameList.stream().toArray(),HttpStatus.OK);
+            return new ResponseEntity<>(gameList.toArray(),HttpStatus.OK);
         }
     }
 
@@ -245,11 +245,11 @@ public class GameService extends CustomFunctions {
         List<CompanyAndGamesAndTags> companyAndGamesAndTagsList = new ArrayList<>();
 
         for (Companies company : companiesList) {
-            CompanyAndGamesAndTags companyAndGamesAndTags = new CompanyAndGamesAndTags();
             List<Game> gameList = gameRepository.findByCompany(company);
             for (Game game : gameList) {
                 List<Tag> currentGameTags = new ArrayList<>(game.getGameTags());
                 if(currentGameTags.stream().anyMatch(listOfTagsFromRequest::contains)){
+                    CompanyAndGamesAndTags companyAndGamesAndTags = new CompanyAndGamesAndTags();
                     companyAndGamesAndTags.setTagList(currentGameTags);
                     companyAndGamesAndTags.setGame(game);
                     companyAndGamesAndTags.setCompanyName(company.getName());
