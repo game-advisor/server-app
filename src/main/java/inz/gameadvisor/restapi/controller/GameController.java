@@ -108,6 +108,15 @@ public class GameController {
         return gameService.getGameThumbnail(id,request);
     }
 
+    @GetMapping("/api/game/{game_id}/info")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No tag found")
+    })
+    public ResponseEntity<Object> getGameByID(@PathVariable("game_id") long gameID, HttpServletRequest request){
+        return gameService.getGameByID(gameID,request);
+    }
+
     @PostMapping("/api/admin/game/add")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "400",description = "Bad request"),
@@ -147,7 +156,7 @@ public class GameController {
 
     @PostMapping("/api/gameRequirementsCompare/{game_ID}/{user_deviceID}/{requirements_type}")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "400", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No tag found")
     })
@@ -160,7 +169,7 @@ public class GameController {
 
     @GetMapping("/api/games/recommend")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "400", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No tag found")
     })
@@ -168,4 +177,6 @@ public class GameController {
                                                 HttpServletRequest request){
         return gameService.gameRecommend(token,request);
     }
+
+
 }

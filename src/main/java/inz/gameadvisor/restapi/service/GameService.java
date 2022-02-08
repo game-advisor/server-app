@@ -263,9 +263,18 @@ public class GameService extends CustomFunctions {
         return new ResponseEntity<>(companyAndGamesAndTagsList.toArray(),HttpStatus.OK);
     }
 
+    public ResponseEntity<Object> getGameByID(long gameID, HttpServletRequest request){
+        Optional<Game> optionalGame = gameRepository.findById(gameID);
+        if(optionalGame.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Game of ID " + gameID + " was not found.");
+        }
+        return new ResponseEntity<>(optionalGame.get(),HttpStatus.OK);
+    }
 
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
         long userID = getUserIDFromToken(token);
+        List<Tag> userFavTags = tagRepository.findByLikeTags_userID(userID);
+
         return null;
     }
 }
