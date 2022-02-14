@@ -189,7 +189,7 @@ public class UserController extends CustomFunctions {
         return userService.removeGameFromFavorites(gameID,request);
     }
 
-    @GetMapping("/api/user/reviews/get")
+    @GetMapping("/api/user/current/reviews/get")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "No reviews found")
@@ -197,6 +197,16 @@ public class UserController extends CustomFunctions {
     public ResponseEntity<Object> getUserReviews(@ApiIgnore @RequestHeader("Authorization") String token,
                                                  HttpServletRequest request){
         return userService.getUserReviews(token, request);
+    }
+
+    @GetMapping("/api/user/{user_id}/reviews/get")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No reviews found")
+    })
+    public ResponseEntity<Object> getUserReviews(@PathVariable("user_id") long userID,
+                                                 HttpServletRequest request){
+        return userService.getUserReviewsByID(userID, request);
     }
 
 }

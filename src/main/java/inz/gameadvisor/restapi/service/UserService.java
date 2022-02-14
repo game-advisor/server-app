@@ -246,6 +246,14 @@ public class UserService extends CustomFunctions {
         }
         return new ResponseEntity<>(reviewList,HttpStatus.OK);
     }
+
+    public ResponseEntity<Object> getUserReviewsByID(long userID, HttpServletRequest request) {
+        List<Review> reviewList = reviewRepository.findByReviewUserID(userID);
+        if(reviewList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
+        }
+        return new ResponseEntity<>(reviewList,HttpStatus.OK);
+    }
 }
 
 
