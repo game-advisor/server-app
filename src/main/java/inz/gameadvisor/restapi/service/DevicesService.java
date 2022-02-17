@@ -203,9 +203,9 @@ public class DevicesService extends CustomFunctions {
         }
 
         //IDs of the components
-        long cpuID = cpu.get().getCpuID();
-        long gpuID = gpu.get().getGpuID();
-        long osID = os.get().getOsID();
+        long cpuID = device.get().getCpu().getCpuID();
+        long gpuID = device.get().getGpu().getGpuID();
+        long osID = device.get().getOs().getOsID();
 
         //Name of device
         String shortName = updatedDevices.getShortName();
