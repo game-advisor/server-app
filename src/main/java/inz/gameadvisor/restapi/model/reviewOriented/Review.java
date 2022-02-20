@@ -1,6 +1,7 @@
 package inz.gameadvisor.restapi.model.reviewOriented;
 
 import inz.gameadvisor.restapi.model.gameOriented.Game;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +18,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reviewID;
 
+    @ManyToOne
     @JoinColumn(name = "review_userID",referencedColumnName = "userID")
-    private long reviewUserID;
+    private User reviewUser;
 
     private String content;
 
