@@ -107,22 +107,22 @@ public class ReviewService extends CustomFunctions {
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating content of the review");
             }
         }
-        if(editReview.getAvgFPS() != editAvgFPS || editReview.getAvgFPS() != 0){
+        if(editReview.getAvgFPS() != editAvgFPS && editReview.getAvgFPS() != 0){
             if(updateField("scores","avgFPS",String.valueOf(editReview.getAvgFPS()),"scoreID",String.valueOf(score.getScoreID())) == 0){
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating average FPS in the score");
             }
         }
-        if(editReview.getMusicRating() != editMusicRating || editReview.getMusicRating() != 0){
+        if(editReview.getMusicRating() != editMusicRating && editReview.getMusicRating() != 0){
             if(updateField("scores","musicRating",String.valueOf(editReview.getMusicRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating music rating in the score");
             }
         }
-        if(editReview.getGraphicsRating() != editGraphicsRating || editReview.getGraphicsRating() != 0){
+        if(editReview.getGraphicsRating() != editGraphicsRating && editReview.getGraphicsRating() != 0){
             if(updateField("scores","graphicsRating",String.valueOf(editReview.getGraphicsRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating graphics rating in the score");
             }
         }
-        if(editReview.getGameplayRating() != editGameplayRating || editReview.getGameplayRating() != 0){
+        if(editReview.getGameplayRating() != editGameplayRating && editReview.getGameplayRating() != 0){
             if(updateField("scores","gameplayRating",String.valueOf(editReview.getGameplayRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
                 return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating gameplay rating in the score");
             }
