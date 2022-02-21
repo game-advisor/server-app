@@ -240,7 +240,12 @@ public class UserService extends CustomFunctions {
     }
 
     public ResponseEntity<Object> getUserReviews(String token, HttpServletRequest request){
-        List<Review> reviewList = reviewRepository.findByReviewUserID(getUserIDFromToken(token));
+        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
+        }
+
+        List<Review> reviewList = reviewRepository.findByReviewUser(user.get());
         if(reviewList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
         }
@@ -248,7 +253,12 @@ public class UserService extends CustomFunctions {
     }
 
     public ResponseEntity<Object> getUserReviewsByID(long userID, HttpServletRequest request) {
-        List<Review> reviewList = reviewRepository.findByReviewUserID(userID);
+        Optional<User> user = userRepository.findById(userID);
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
+        }
+
+        List<Review> reviewList = reviewRepository.findByReviewUser(user.get());
         if(reviewList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
         }

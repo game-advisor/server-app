@@ -2,6 +2,7 @@ package inz.gameadvisor.restapi.repository;
 
 import inz.gameadvisor.restapi.model.gameOriented.Game;
 import inz.gameadvisor.restapi.model.reviewOriented.Review;
+import inz.gameadvisor.restapi.model.userOriented.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +12,5 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findReviewsBygame(Game game);
     long countAllBygame(Game game);
-    List<Review> findByReviewUserID(long userID);
+    List<Review> findByReviewUser(User user);
 }

@@ -19,7 +19,7 @@ public class Review {
     private long reviewID;
 
     @ManyToOne
-    @JoinColumn(name = "review_userID",referencedColumnName = "userID")
+    @JoinColumn(name = "reviewUserID",referencedColumnName = "userID")
     private User reviewUser;
 
     private String content;

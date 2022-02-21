@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.Column;
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Optional;
@@ -79,6 +80,7 @@ public class ReviewService extends CustomFunctions {
         return responseFromServer(HttpStatus.OK,request,"Review posted successfully");
     }
 
+    @Transactional
     public ResponseEntity<Object> editReview(long reviewID, EditAddReview editReview, HttpServletRequest request, String token) {
         Optional<User> user = userRepository.findById(getUserIDFromToken(token));
         if(user.isEmpty()){
@@ -95,7 +97,6 @@ public class ReviewService extends CustomFunctions {
         }
 
         Score score = review.get().getScore();
-        Timestamp createdAt = review.get().getDateCreated();
         float editAvgFPS = score.getAvgFPS();
         int editMusicRating = score.getMusicRating();
         int editGraphicsRating = score.getGraphicsRating();
@@ -107,9 +108,25 @@ public class ReviewService extends CustomFunctions {
             }
         }
         if(editReview.getAvgFPS() != editAvgFPS || editReview.getAvgFPS() != 0){
-            if(updateField("scores",""))
+            if(updateField("scores","avgFPS",String.valueOf(editReview.getAvgFPS()),"scoreID",String.valueOf(score.getScoreID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating average FPS in the score");
+            }
         }
-
-
+        if(editReview.getMusicRating() != editMusicRating || editReview.getMusicRating() != 0){
+            if(updateField("scores","musicRating",String.valueOf(editReview.getMusicRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating music rating in the score");
+            }
+        }
+        if(editReview.getGraphicsRating() != editGraphicsRating || editReview.getGraphicsRating() != 0){
+            if(updateField("scores","graphicsRating",String.valueOf(editReview.getGraphicsRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating graphics rating in the score");
+            }
+        }
+        if(editReview.getGameplayRating() != editGameplayRating || editReview.getGameplayRating() != 0){
+            if(updateField("scores","gameplayRating",String.valueOf(editReview.getGameplayRating()),"scoreID",String.valueOf(score.getScoreID())) == 0){
+                return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,"There was an error updating gameplay rating in the score");
+            }
+        }
+        return responseFromServer(HttpStatus.OK,request,"Review ID: " + reviewID + " updated successfully");
     }
 }
