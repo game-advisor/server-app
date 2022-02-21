@@ -11,4 +11,5 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findReviewsBygame(Game game);
     long countAllBygame(Game game);
+    List<Review> findByReviewUserID(long userID);
 }

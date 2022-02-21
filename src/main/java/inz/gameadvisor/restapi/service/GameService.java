@@ -3,11 +3,10 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.misc.PublishDates;
 import inz.gameadvisor.restapi.model.Companies;
+import inz.gameadvisor.restapi.model.deviceOriented.Devices;
 import inz.gameadvisor.restapi.model.gameOriented.*;
-import inz.gameadvisor.restapi.repository.CompaniesRepository;
-import inz.gameadvisor.restapi.repository.GameRepository;
-import inz.gameadvisor.restapi.repository.ReviewRepository;
-import inz.gameadvisor.restapi.repository.TagRepository;
+import inz.gameadvisor.restapi.model.userOriented.User;
+import inz.gameadvisor.restapi.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +30,9 @@ public class GameService extends CustomFunctions {
     private final FileStorageService fileStorageService;
     private final ReviewRepository reviewRepository;
     private final CompaniesRepository companiesRepository;
+    private final GameRequirementsRepository gameRequirementsRepository;
+    private final DevicesRepository devicesRepository;
+    private final UserRepository userRepository;
 
     public ResponseEntity<Object> getGamesByName(String name, HttpServletRequest request){
         if(name.isBlank()){
@@ -267,9 +269,25 @@ public class GameService extends CustomFunctions {
         return new ResponseEntity<>(optionalGame.get(),HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
-        long userID = getUserIDFromToken(token);
-        List<Tag> userFavTags = tagRepository.findByLikeTags_userID(userID);
+        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+        if(user.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
+        }
+
+        List<Tag> userFavTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
+
+        List<Game> allGamesList = gameRepository.findAll();
+
+        List<List<GameRequirements>> gameRequirementsList = new ArrayList<>();
+
+        List<Devices> userDevices = devicesRepository.findDevicesByUser(user.get());
+
+        for (Game game:
+             allGamesList) {
+            gameRequirementsList.add(gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID()));
+        }
 
         return null;
     }

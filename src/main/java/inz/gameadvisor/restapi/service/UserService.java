@@ -3,13 +3,16 @@ package inz.gameadvisor.restapi.service;
 import inz.gameadvisor.restapi.misc.CustomFunctions;
 import inz.gameadvisor.restapi.model.gameOriented.Game;
 import inz.gameadvisor.restapi.model.gameOriented.Tag;
+import inz.gameadvisor.restapi.model.reviewOriented.Review;
 import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
 import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.GameRepository;
+import inz.gameadvisor.restapi.repository.ReviewRepository;
 import inz.gameadvisor.restapi.repository.TagRepository;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Not;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ public class UserService extends CustomFunctions {
     private final GameRepository gameRepository;
     private final TagRepository tagRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReviewRepository reviewRepository;
 
     @PersistenceContext
     EntityManager em;
@@ -233,6 +237,22 @@ public class UserService extends CustomFunctions {
             return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
         }
         return responseFromServer(HttpStatus.OK,request,"Account deleted successfully");
+    }
+
+    public ResponseEntity<Object> getUserReviews(String token, HttpServletRequest request){
+        List<Review> reviewList = reviewRepository.findByReviewUserID(getUserIDFromToken(token));
+        if(reviewList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
+        }
+        return new ResponseEntity<>(reviewList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> getUserReviewsByID(long userID, HttpServletRequest request) {
+        List<Review> reviewList = reviewRepository.findByReviewUserID(userID);
+        if(reviewList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
+        }
+        return new ResponseEntity<>(reviewList,HttpStatus.OK);
     }
 }
 

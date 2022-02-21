@@ -1,12 +1,14 @@
 package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.misc.CustomFunctions;
+import inz.gameadvisor.restapi.model.reviewOriented.Review;
 import inz.gameadvisor.restapi.model.userOriented.LoginCredentials;
 import inz.gameadvisor.restapi.model.userOriented.RegisterCredentials;
 import inz.gameadvisor.restapi.model.userOriented.UpdateUser;
 import inz.gameadvisor.restapi.model.userOriented.User;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import inz.gameadvisor.restapi.service.FileStorageService;
+import inz.gameadvisor.restapi.service.ReviewService;
 import inz.gameadvisor.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,6 +23,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -31,6 +34,7 @@ public class UserController extends CustomFunctions {
     private final UserService userService;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
+    private final ReviewService reviewService;
 
     @PutMapping("/api/user/edit")
     @ApiResponses(value = {
@@ -185,5 +189,24 @@ public class UserController extends CustomFunctions {
         return userService.removeGameFromFavorites(gameID,request);
     }
 
+    @GetMapping("/api/user/current/reviews/get")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No reviews found")
+    })
+    public ResponseEntity<Object> getUserReviews(@ApiIgnore @RequestHeader("Authorization") String token,
+                                                 HttpServletRequest request){
+        return userService.getUserReviews(token, request);
+    }
+
+    @GetMapping("/api/user/{user_id}/reviews/get")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "No reviews found")
+    })
+    public ResponseEntity<Object> getUserReviews(@PathVariable("user_id") long userID,
+                                                 HttpServletRequest request){
+        return userService.getUserReviewsByID(userID, request);
+    }
 
 }
