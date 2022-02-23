@@ -2,6 +2,7 @@ package inz.gameadvisor.restapi.controller;
 
 import inz.gameadvisor.restapi.model.reviewOriented.EditAddReview;
 import inz.gameadvisor.restapi.service.ReviewService;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,22 @@ public class ReviewController {
         return reviewService.addReview(gameID, editAddReview, request, token);
     }
 
+    @GetMapping("/api/review/{review_id}/get")
+    @ApiResponses(value ={
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    public ResponseEntity<Object> getReviewByID(@PathVariable("review_id") long reviewID,
+                                                HttpServletRequest request,
+                                                @ApiIgnore @RequestHeader("Authorization") String token){
+        return reviewService.getReviewByID(reviewID,request,token);
+    }
+
     @PutMapping("/api/review/{review_id}/edit")
     @ApiResponses(value ={
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     public ResponseEntity<Object> editReview(@PathVariable("review_id") long reviewID,
@@ -51,5 +65,17 @@ public class ReviewController {
                                              HttpServletRequest request,
                                              @ApiIgnore @RequestHeader("Authorization") String token){
         return reviewService.editReview(reviewID,editReview,request,token);
+    }
+
+    @DeleteMapping("/api/review/{review_id}/delete")
+    @ApiResponses(value ={
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    public ResponseEntity<Object> deleteReview(@PathVariable("review_id") long reviewID,
+                                               @ApiIgnore @RequestHeader("Authorization") String token,
+                                               HttpServletRequest request){
+        return reviewService.deleteReview(reviewID, token, request);
     }
 }

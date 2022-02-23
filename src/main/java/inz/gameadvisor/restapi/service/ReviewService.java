@@ -82,17 +82,12 @@ public class ReviewService extends CustomFunctions {
 
     @Transactional
     public ResponseEntity<Object> editReview(long reviewID, EditAddReview editReview, HttpServletRequest request, String token) {
-        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
-        if(user.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
-        }
-
         Optional<Review> review = reviewRepository.findById(reviewID);
         if(review.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"Review of id " + reviewID + " was not found");
         }
 
-        if(review.get().getReviewUser().getUserID() != user.get().getUserID()){
+        if(review.get().getReviewUser().getUserID() != getUserIDFromToken(token)){
             return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
         }
 
@@ -128,5 +123,43 @@ public class ReviewService extends CustomFunctions {
             }
         }
         return responseFromServer(HttpStatus.OK,request,"Review ID: " + reviewID + " updated successfully");
+    }
+
+    @Transactional
+    public ResponseEntity<Object> deleteReview(long reviewID, String token, HttpServletRequest request){
+        Optional<Review> review = reviewRepository.findById(reviewID);
+        if(review.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Review of ID " + reviewID + " was not found");
+        }
+
+        try{
+            if(review.get().getReviewUser().getUserID() == getUserIDFromToken(token))
+                reviewRepository.deleteById(reviewID);
+            else if(isUserAnAdmin(getUserIDFromToken(token)))
+                reviewRepository.deleteById(reviewID);
+            else
+                return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
+        catch (IllegalArgumentException e){
+            return responseFromServer(HttpStatus.INTERNAL_SERVER_ERROR,request,e.getMessage());
+        }
+        return responseFromServer(HttpStatus.OK,request,"Review deleted successfully");
+    }
+
+    public ResponseEntity<Object> getReviewByID(long reviewID, HttpServletRequest request, String token) {
+        Optional<Review> review = reviewRepository.findById(reviewID);
+        if(review.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"Review of ID " + reviewID + " was not found");
+        }
+
+        if(review.get().getReviewUser().getUserID() == getUserIDFromToken(token)){
+            return new ResponseEntity<>(review.get(),HttpStatus.OK);
+        }
+        else if(isUserAnAdmin(getUserIDFromToken(token))){
+            return new ResponseEntity<>(review.get(),HttpStatus.OK);
+        }
+        else{
+            return responseFromServer(HttpStatus.FORBIDDEN,request,ForbiddenAccessMessage);
+        }
     }
 }

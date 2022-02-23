@@ -1,9 +1,7 @@
 package inz.gameadvisor.restapi.misc;
 
-import lombok.SneakyThrows;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
