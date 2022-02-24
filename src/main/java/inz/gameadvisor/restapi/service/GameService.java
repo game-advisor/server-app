@@ -285,9 +285,7 @@ public class GameService extends CustomFunctions {
             for (GameRequirements gameRequirements : gameRequirementsList) {
                 GameAndGameReq gameAndGameReq = new GameAndGameReq();
                 gameAndGameReq.setGame(game);
-                if(gameRequirements.getType().equals("max"))
-                    continue;
-                else{
+                if(gameRequirements.getType().equals("min")){
                     gameAndGameReq.setGameRequirements(gameRequirements);
                     gameAndGameReqList.add(gameAndGameReq);
                 }
