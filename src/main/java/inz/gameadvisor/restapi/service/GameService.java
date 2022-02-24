@@ -276,11 +276,16 @@ public class GameService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found");
         }
 
+        List<GameRequirementsList> gameRequirementsListList = new ArrayList<>();
+
         for (Game game : gameList) {
             GameRequirementsList gameRequirementsList = new GameRequirementsList();
             gameRequirementsList.setGame(game);
             gameRequirementsList.setGameRequirementsList(gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID()));
+            gameRequirementsListList.add(gameRequirementsList);
         }
+
+
 
         List<Tag> favTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
 
