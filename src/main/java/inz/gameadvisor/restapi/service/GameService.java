@@ -396,6 +396,7 @@ public class GameService extends CustomFunctions {
 ////                else if(gameReq.getType().equals("max") && requirementsType.equals("max")){
 ////                    gameRequirements = gameReq;
 ////                }
+
 ////            }
 ////            GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
 ////            if(device.get().getCpu().getScore() >= gameRequirements.getCpu().getScore())
