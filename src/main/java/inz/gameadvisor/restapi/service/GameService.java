@@ -285,7 +285,7 @@ public class GameService extends CustomFunctions {
             gameAndGameReq.setGame(game);
             List<GameRequirements> gameRequirementsList = gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID());
             for (GameRequirements gameRequirements : gameRequirementsList) {
-                if(gameRequirements.getType().equals("min"));
+                if(gameRequirements.getType().equals("min"))
                     gameAndGameReq.setGameRequirements(gameRequirements);
             }
             if(gameAndGameReq.getGameRequirements().getType().equals("min"))
