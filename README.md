@@ -14,5 +14,4 @@
   <br>
   Po pobraniu aplikacji należy odczekać chwilę, aż zostaną pobrane wszystkie zależności przez Gradle.<br>
   Po zakończonym procesie, można przejść do zbudowania i uruchomienia aplikacji. Po wejściu przez przeglądarkę<br>
-  na adres <a href="localhost:8080/swagger-ui/">localhost:8080/swagger-ui/</a> dostępny będzie Swagger UI,<br>
-  w którym udokumentowane jest całe API i punkty krańcowe.
+  na adres: localhost:8080/swagger-ui/ dostępny będzie Swagger UI, w którym udokumentowane jest całe API i punkty krańcowe.
