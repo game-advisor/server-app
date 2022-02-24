@@ -271,21 +271,75 @@ public class GameService extends CustomFunctions {
 
     @Transactional
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
+        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+
         List<Game> gameList = gameRepository.findAll();
         if(gameList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found");
         }
 
-        List<GameRequirementsList> gameRequirementsListList = new ArrayList<>();
+        List<GameAndGameReq> gameAndGameReqList = new ArrayList<>();
 
         for (Game game : gameList) {
-            GameRequirementsList gameRequirementsList = new GameRequirementsList();
-            gameRequirementsList.setGame(game);
-            gameRequirementsList.setGameRequirementsList(gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID()));
-            gameRequirementsListList.add(gameRequirementsList);
+            GameAndGameReq gameAndGameReq = new GameAndGameReq();
+            gameAndGameReq.setGame(game);
+            List<GameRequirements> gameRequirementsList = gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID());
+            for (GameRequirements gameRequirements : gameRequirementsList) {
+                if(gameRequirements.getType().equals("min"));
+                gameAndGameReq.setGameRequirements(gameRequirements);
+            }
+            gameAndGameReqList.add(gameAndGameReq);
         }
 
 
+
+        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
+
+        if(devicesList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
+        }
+
+        List<GameReqGameAndPass> gameReqGameAndPassList = new ArrayList<>();
+
+//        for (Devices device : devicesList) {
+//            for (GameRequirementsList gameRequirementsList1 : gameRequirementsListList) {
+//                GameReqGameAndPass gameReqGameAndPass = new GameReqGameAndPass();
+//                gameReqGameAndPass.setGameRequirementsPass();
+//                if(device.getGpu().getScore() >= )
+//            }
+//        }
+
+//        Optional<Devices> device = devicesRepository.findById(deviceID);
+//            if(!requirementsType.equals("min") && !requirementsType.equals("max")){
+//                return responseFromServer(HttpStatus.BAD_REQUEST,request,BadRequestMessage);
+//            }
+//            GameRequirements gameRequirements = new GameRequirements();
+//            if(device.isEmpty()){
+//                return responseFromServer(HttpStatus.NOT_FOUND,request,"Device of given ID was not found");
+//            }
+//            List<GameRequirements> gameRequirementsList = gameRequirementsRepository.findGameRequirementsByGame_gameID(gameID);
+//            if(gameRequirementsList.isEmpty()){
+//                return responseFromServer(HttpStatus.NOT_FOUND,request,"Game requirements or game of given ID was not found");
+//            }
+//            for (GameRequirements gameReq : gameRequirementsList) {
+//                if(gameReq.getType().equals("min") && requirementsType.equals("min")){
+//                    gameRequirements = gameReq;
+//                }
+//                else if(gameReq.getType().equals("max") && requirementsType.equals("max")){
+//                    gameRequirements = gameReq;
+//                }
+//            }
+//            GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
+//            if(device.get().getCpu().getScore() >= gameRequirements.getCpu().getScore())
+//                gameRequirementsPass.setCpuOK(true);
+//            if(device.get().getGpu().getScore() >= gameRequirements.getGpu().getScore())
+//                gameRequirementsPass.setGpuOK(true);
+//            if(device.get().getOs().getOsID() >= gameRequirements.getOs().getOsID())
+//                gameRequirementsPass.setOsOK(true);
+//            int deviceRamSize = device.get().getRam().getSize() * device.get().getRam().getAmountOfSticks();
+//            if(deviceRamSize >= gameRequirements.getRamSizeReq())
+//                gameRequirementsPass.setRamSizeOK(true);
+//            return new ResponseEntity<>(gameRequirementsPass,HttpStatus.OK);
 
         List<Tag> favTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
 
