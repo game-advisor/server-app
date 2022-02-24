@@ -271,22 +271,24 @@ public class GameService extends CustomFunctions {
 
     @Transactional
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
-        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
-        if(user.isEmpty()){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoUserFoundMessage);
+        List<Game> gameList = gameRepository.findAll();
+        if(gameList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No games found");
         }
 
-        List<Tag> userFavTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
+        for (Game game : gameList) {
+            GameRequirementsList gameRequirementsList = new GameRequirementsList();
+            gameRequirementsList.setGame(game);
+            gameRequirementsList.setGameRequirementsList(gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID()));
+        }
 
-        List<Game> allGamesList = gameRepository.findAll();
+        List<Tag> favTags = tagRepository.findByLikeTags_userID(getUserIDFromToken(token));
 
-        List<List<GameRequirements>> gameRequirementsList = new ArrayList<>();
+        if(favTags.isEmpty()){
 
-        List<Devices> userDevices = devicesRepository.findDevicesByUser(user.get());
+        }
+        else{
 
-        for (Game game:
-             allGamesList) {
-            gameRequirementsList.add(gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID()));
         }
 
         return null;

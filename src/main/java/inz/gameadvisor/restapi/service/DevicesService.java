@@ -408,5 +408,4 @@ public class DevicesService extends CustomFunctions {
             gameRequirementsPass.setRamSizeOK(true);
         return new ResponseEntity<>(gameRequirementsPass,HttpStatus.OK);
     }
-
 }

@@ -68,9 +68,7 @@ public class CustomFunctions {
         Query query = em.createNativeQuery("SELECT roles FROM users WHERE userID = ?;")
                 .setParameter(1, userID);
 
-        String queryUserRole = query.getSingleResult().toString();
-
-        return queryUserRole.equals("ROLE_ADMIN");
+        return query.getSingleResult().toString().equals("ROLE_ADMIN");
     }
 
     @Transactional
@@ -112,19 +110,6 @@ public class CustomFunctions {
         return Pattern.compile(regexPattern)
                 .matcher(emailAddress)
                 .matches();
-    }
-
-    public boolean checkIfManufacturerExistsWithSuchId(long id){
-        Query query = em.createNativeQuery("SELECT name FROM companies WHERE companyID = ?")
-                .setParameter(1, id);
-
-        try{
-            query.getSingleResult();
-        }
-        catch (NoResultException e){
-            return false;
-        }
-        return true;
     }
 
     public int boolToInt(boolean b) {

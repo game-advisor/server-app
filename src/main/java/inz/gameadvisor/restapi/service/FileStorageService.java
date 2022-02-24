@@ -24,8 +24,7 @@ public class FileStorageService extends CustomFunctions {
 
     private final Path fileStorageLocation;
 
-    @SneakyThrows
-    public FileStorageService(FileStorageProperties fileStorageProperties) {
+    public FileStorageService(FileStorageProperties fileStorageProperties) throws FileUploadException {
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
                 .toAbsolutePath().normalize();
 

@@ -139,10 +139,6 @@ public class AdminService extends CustomFunctions {
             return responseFromServer(HttpStatus.BAD_REQUEST,request,"Series cannot be empty");
         }
 
-        if(!checkIfManufacturerExistsWithSuchId(manufID)){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
-        }
-
         if(score <= 0){
             return responseFromServer(HttpStatus.CONFLICT,request,"Your score values are less than or equal 0");
         }
@@ -272,10 +268,6 @@ public class AdminService extends CustomFunctions {
         }
         if(series.isBlank()){
             return responseFromServer(HttpStatus.BAD_REQUEST,request,"Series cannot be empty");
-        }
-
-        if(!checkIfManufacturerExistsWithSuchId(manufID)){
-            return responseFromServer(HttpStatus.NOT_FOUND,request,NoCompanyFoundMessage);
         }
 
         if(score <= 0){

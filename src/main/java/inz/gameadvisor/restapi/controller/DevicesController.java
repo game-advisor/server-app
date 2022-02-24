@@ -47,10 +47,10 @@ public class DevicesController {
             @ApiResponse(responseCode = "404", description = "No device found")
     })
     public ResponseEntity<Object> getDevicesByUserID(@RequestParam(defaultValue = "0") Integer pageNumber,
-                                                            @RequestParam(defaultValue = "10") Integer pageSize,
-                                                            @RequestParam(defaultValue = "deviceID") String sortBy,
-                                                            @PathVariable("user_id") long id,
-                                                            HttpServletRequest request){
+                                                     @RequestParam(defaultValue = "10") Integer pageSize,
+                                                     @RequestParam(defaultValue = "deviceID") String sortBy,
+                                                     @PathVariable("user_id") long id,
+                                                     HttpServletRequest request){
         return devicesService.getDevicesByUserID(pageNumber, pageSize, sortBy, id, request);
     }
 
