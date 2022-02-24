@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.config;
+package inz.gameadvisor.restapi.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import inz.gameadvisor.restapi.model.userOriented.LoginCredentials;

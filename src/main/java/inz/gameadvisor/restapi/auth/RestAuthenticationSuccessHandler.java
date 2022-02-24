@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.config;
+package inz.gameadvisor.restapi.auth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

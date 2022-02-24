@@ -1,6 +1,10 @@
 package inz.gameadvisor.restapi.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import inz.gameadvisor.restapi.auth.JsonObjectAuthenticationFilter;
+import inz.gameadvisor.restapi.auth.JwtAuthorizationFilter;
+import inz.gameadvisor.restapi.auth.RestAuthenticationFailureHandler;
+import inz.gameadvisor.restapi.auth.RestAuthenticationSuccessHandler;
 import inz.gameadvisor.restapi.misc.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

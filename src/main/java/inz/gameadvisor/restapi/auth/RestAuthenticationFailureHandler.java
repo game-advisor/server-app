@@ -1,4 +1,4 @@
-package inz.gameadvisor.restapi.config;
+package inz.gameadvisor.restapi.auth;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
