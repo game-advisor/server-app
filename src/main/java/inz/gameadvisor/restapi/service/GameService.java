@@ -292,24 +292,46 @@ public class GameService extends CustomFunctions {
             }
         }
 
-        List<Game> minGame = new ArrayList<>();
-
-        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
-            minGame.add(gameAndGameReq.getGame());
+        List<Devices> userDevicesList = devicesRepository.findDevicesByUser(user.get());
+        if(userDevicesList.isEmpty()){
+            return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
         }
 
+        List<Devices> compatibleDevices = new ArrayList<>();
+
+        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
+            GameRequirements currentGameRequirements = gameAndGameReq.getGameRequirements();
+            for (Devices device : userDevicesList) {
+                GameRequirementsPass gameReqPassTemp = new GameRequirementsPass();
+                gameReqPassTemp.setOsOK(false);
+                gameReqPassTemp.setGpuOK(false);
+                gameReqPassTemp.setCpuOK(false);
+                gameReqPassTemp.setRamSizeOK(false);
+                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks()) >= currentGameRequirements.getRamSizeReq())
+                    gameReqPassTemp.setRamSizeOK(true);
+                if(device.getCpu().getScore() >= currentGameRequirements.getCpu().getScore())
+                    gameReqPassTemp.setCpuOK(true);
+                if(device.getGpu().getScore() >= currentGameRequirements.getGpu().getScore())
+                    gameReqPassTemp.setGpuOK(true);
+                if(device.getOs().getOsID() >= currentGameRequirements.getOs().getOsID())
+                    gameReqPassTemp.setOsOK(true);
+
+                if(gameReqPassTemp.isCpuOK() && gameReqPassTemp.isGpuOK() && gameReqPassTemp.isRamSizeOK() && gameReqPassTemp.isOsOK())
+                    compatibleDevices.add(device);
+            }
+        }
+
+
+
 //
 //
-//        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
-//        if(devicesList.isEmpty()){
-//            return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
-//        }
-//
+
+
 //
 //
 //        GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
 
-        return new ResponseEntity<>(minGame.toArray(),HttpStatus.OK);
+        return new ResponseEntity<>(compatibleDevices.toArray(),HttpStatus.OK);
 
 //        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
 //
