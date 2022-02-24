@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class GameReqGameAndPass {
+public class GameAndGameReqPass {
     private Game game;
     private GameRequirementsPass gameRequirementsPass;
 }

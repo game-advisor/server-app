@@ -292,7 +292,24 @@ public class GameService extends CustomFunctions {
             }
         }
 
-        return new ResponseEntity<>(gameAndGameReqList.toArray(),HttpStatus.OK);
+        List<Game> minGame = new ArrayList<>();
+
+        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
+            minGame.add(gameAndGameReq.getGame());
+        }
+
+//
+//
+//        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
+//        if(devicesList.isEmpty()){
+//            return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
+//        }
+//
+//
+//
+//        GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
+
+        return new ResponseEntity<>(minGame.toArray(),HttpStatus.OK);
 
 //        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
 //
