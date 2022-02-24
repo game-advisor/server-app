@@ -292,6 +292,12 @@ public class GameService extends CustomFunctions {
             }
         }
 
+        List<Game> minGameList = new ArrayList<>();
+
+        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
+            minGameList.add(gameAndGameReq.getGame());
+        }
+
         List<Devices> userDevicesList = devicesRepository.findDevicesByUser(user.get());
         if(userDevicesList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
@@ -299,39 +305,61 @@ public class GameService extends CustomFunctions {
 
         List<Devices> compatibleDevices = new ArrayList<>();
 
+        List<GameAndDevicesCompatible> gameAndDevicesCompatibleList = new ArrayList<>();
+
         for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
-            GameRequirements currentGameRequirements = gameAndGameReq.getGameRequirements();
+            GameAndDevicesCompatible gameAndDevicesCompatible = new GameAndDevicesCompatible();
+            gameAndDevicesCompatible.setGame(gameAndGameReq.getGame());
             for (Devices device : userDevicesList) {
                 GameRequirementsPass gameReqPassTemp = new GameRequirementsPass();
                 gameReqPassTemp.setOsOK(false);
                 gameReqPassTemp.setGpuOK(false);
                 gameReqPassTemp.setCpuOK(false);
                 gameReqPassTemp.setRamSizeOK(false);
-                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks()) >= currentGameRequirements.getRamSizeReq())
+                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks()) >= gameAndGameReq.getGameRequirements().getRamSizeReq())
                     gameReqPassTemp.setRamSizeOK(true);
-                if(device.getCpu().getScore() >= currentGameRequirements.getCpu().getScore())
+                if(device.getCpu().getScore() >= gameAndGameReq.getGameRequirements().getCpu().getScore())
                     gameReqPassTemp.setCpuOK(true);
-                if(device.getGpu().getScore() >= currentGameRequirements.getGpu().getScore())
+                if(device.getGpu().getScore() >= gameAndGameReq.getGameRequirements().getGpu().getScore())
                     gameReqPassTemp.setGpuOK(true);
-                if(device.getOs().getOsID() >= currentGameRequirements.getOs().getOsID())
+                if(device.getOs().getOsID() >= gameAndGameReq.getGameRequirements().getOs().getOsID())
                     gameReqPassTemp.setOsOK(true);
-
                 if(gameReqPassTemp.isCpuOK() && gameReqPassTemp.isGpuOK() && gameReqPassTemp.isRamSizeOK() && gameReqPassTemp.isOsOK())
                     compatibleDevices.add(device);
             }
+            gameAndDevicesCompatible.setCompatibleDevices(compatibleDevices);
+            gameAndDevicesCompatibleList.add(gameAndDevicesCompatible);
         }
 
+        return new ResponseEntity<>(gameAndDevicesCompatibleList.toArray(),HttpStatus.OK);
 
 
 //
-//
-
-
+//        List<GameAndDevicesCompatible> gameAndDevicesCompatibleList = new ArrayList<>();
 //
 //
-//        GameRequirementsPass gameRequirementsPass = new GameRequirementsPass();
-
-        return new ResponseEntity<>(compatibleDevices.toArray(),HttpStatus.OK);
+//
+//        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
+//            GameRequirements currentGameRequirements = gameAndGameReq.getGameRequirements();
+//            for (Devices device : userDevicesList) {
+//                GameRequirementsPass gameReqPassTemp = new GameRequirementsPass();
+//                gameReqPassTemp.setOsOK(false);
+//                gameReqPassTemp.setGpuOK(false);
+//                gameReqPassTemp.setCpuOK(false);
+//                gameReqPassTemp.setRamSizeOK(false);
+//                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks()) >= currentGameRequirements.getRamSizeReq())
+//                    gameReqPassTemp.setRamSizeOK(true);
+//                if(device.getCpu().getScore() >= currentGameRequirements.getCpu().getScore())
+//                    gameReqPassTemp.setCpuOK(true);
+//                if(device.getGpu().getScore() >= currentGameRequirements.getGpu().getScore())
+//                    gameReqPassTemp.setGpuOK(true);
+//                if(device.getOs().getOsID() >= currentGameRequirements.getOs().getOsID())
+//                    gameReqPassTemp.setOsOK(true);
+//
+//                if(gameReqPassTemp.isCpuOK() && gameReqPassTemp.isGpuOK() && gameReqPassTemp.isRamSizeOK() && gameReqPassTemp.isOsOK())
+//                    compatibleDevices.add(device);
+//            }
+//        }
 
 //        List<Devices> devicesList = devicesRepository.findDevicesByUser(user.get());
 //
