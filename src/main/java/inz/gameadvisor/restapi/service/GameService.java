@@ -292,18 +292,10 @@ public class GameService extends CustomFunctions {
             }
         }
 
-        List<Game> minGameList = new ArrayList<>();
-
-        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
-            minGameList.add(gameAndGameReq.getGame());
-        }
-
         List<Devices> userDevicesList = devicesRepository.findDevicesByUser(user.get());
         if(userDevicesList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
         }
-
-
 
         List<GameAndDevicesCompatible> gameAndDevicesCompatibleList = new ArrayList<>();
 
