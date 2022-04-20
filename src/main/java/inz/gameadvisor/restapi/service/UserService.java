@@ -12,7 +12,6 @@ import inz.gameadvisor.restapi.repository.ReviewRepository;
 import inz.gameadvisor.restapi.repository.TagRepository;
 import inz.gameadvisor.restapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,11 @@ import org.springframework.stereotype.Service;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -263,6 +266,20 @@ public class UserService extends CustomFunctions {
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No reviews found for this user");
         }
         return new ResponseEntity<>(reviewList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> checkTokenExpiryTime(String token){
+        Timestamp currentDate = new Timestamp(System.currentTimeMillis());
+        Timestamp tokenExpiryDate = new Timestamp(getTokenExpiryTimeFromToken(token));
+        long timeLeft = tokenExpiryDate.getTime() - currentDate.getTime();
+        long diffSeconds = timeLeft / 1000 % 60;
+        long diffMinutes = timeLeft / (60 * 1000) % 60;
+        long diffHours = timeLeft / (60 * 60 * 1000) % 24;
+        long diffDays = timeLeft / (24 * 60 * 60 * 1000);
+        String message = "Token valid for: " + diffDays + " days, " + diffHours + " hours, " + diffMinutes + " minutes, " + diffSeconds + " seconds.";
+        JSONObject json = new JSONObject();
+        json.put("Message",message);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 }
 

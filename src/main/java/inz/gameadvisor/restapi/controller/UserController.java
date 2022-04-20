@@ -209,4 +209,12 @@ public class UserController extends CustomFunctions {
         return userService.getUserReviewsByID(userID, request);
     }
 
+    @GetMapping("/api/user/token/checkExpiry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<Object> checkTokenExpiryTime(@ApiIgnore @RequestHeader("Authorization") String token){
+        return userService.checkTokenExpiryTime(token);
+    }
+
 }

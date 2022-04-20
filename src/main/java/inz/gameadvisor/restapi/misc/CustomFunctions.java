@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,6 +63,11 @@ public class CustomFunctions {
     public long getUserIDFromToken(String token){
         JSONObject tokenBody = getBodyFromToken(token);
         return Long.parseLong(tokenBody.get("userID").toString());
+    }
+
+    public long getTokenExpiryTimeFromToken(String token){
+        JSONObject tokenBody = getBodyFromToken(token);
+        return Long.parseLong(tokenBody.get("exp").toString())*1000;
     }
 
     public boolean isUserAnAdmin(long userID) {

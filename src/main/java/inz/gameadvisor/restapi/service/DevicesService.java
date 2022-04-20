@@ -91,7 +91,6 @@ public class DevicesService extends CustomFunctions {
     public ResponseEntity<Object> addDevice(UpdatedDevices device, HttpServletRequest request, String token){
 
         long userID = getUserIDFromToken(token);
-
         Devices createdDevice = new Devices();
 
         Optional<CPU> cpu = cpuRepository.findById(device.getCpuID());
@@ -113,7 +112,6 @@ public class DevicesService extends CustomFunctions {
         }
 
         createdDevice.setShortName(device.getShortName());
-
         if(checkIfSameRecordExists("shortName","devices",device.getShortName())){
             return responseFromServer(HttpStatus.CONFLICT, request, DeviceDuplicateNameMessage);
         }
@@ -275,7 +273,6 @@ public class DevicesService extends CustomFunctions {
         if(cpuList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU of such series found");
         }
-        cpuList.sort(Comparator.comparing(CPU::getScore));
         List<CPUGPUName> cpuNames = new ArrayList<>();
         for (CPU cpu:
              cpuList) {
@@ -283,6 +280,7 @@ public class DevicesService extends CustomFunctions {
             cpuName.setName(cpu.getName());
             cpuNames.add(cpuName);
         }
+        cpuNames.sort(Comparator.comparing(CPUGPUName::getName));
         return new ResponseEntity<>(cpuNames,HttpStatus.OK);
     }
 
@@ -319,6 +317,7 @@ public class DevicesService extends CustomFunctions {
             cpuSeries.setSeries(String.valueOf(seriesList.get(seriesList.indexOf(object))));
             cpuSeriesList.add(cpuSeries);
         }
+        cpuSeriesList.sort(Comparator.comparing(CPUSeries::getSeries));
         if(seriesList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No CPU found for given company name");
         }

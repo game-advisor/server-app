@@ -15,12 +15,17 @@ configurations {
 	}
 }
 
-war{
-	enabled = true
-}
 
 repositories {
 	mavenCentral()
+}
+
+bootRun {
+	jvmArgs = ["-Dspring.output.ansi.enabled=ALWAYS"]
+}
+
+bootJar{
+	mainClassName("inz.gameadvisor.restapi.RestapiApplication")
 }
 
 dependencies {
@@ -30,7 +35,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security:2.5.6'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	compileOnly('org.springframework.boot:spring-boot-starter-tomcat')
 
 	// https://mvnrepository.com/artifact/io.springfox/springfox-swagger2
 	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '3.0.0'

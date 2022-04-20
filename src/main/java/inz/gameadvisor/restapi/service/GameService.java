@@ -271,7 +271,8 @@ public class GameService extends CustomFunctions {
 
     @Transactional
     public ResponseEntity<Object> gameRecommend(String token, HttpServletRequest request) {
-        Optional<User> user = userRepository.findById(getUserIDFromToken(token));
+        Optional<User> user = userRepository
+                .findById(getUserIDFromToken(token));
 
         List<Game> gameList = gameRepository.findAll();
         if(gameList.isEmpty()){
@@ -281,29 +282,26 @@ public class GameService extends CustomFunctions {
         List<GameAndGameReq> gameAndGameReqList = new ArrayList<>();
 
         for (Game game : gameList) {
-            List<GameRequirements> gameRequirementsList = gameRequirementsRepository.findGameRequirementsByGame_gameID(game.getGameID());
+            List<GameRequirements> gameRequirementsList = gameRequirementsRepository
+                    .findGameRequirementsByGame_gameID(game.getGameID());
             for (GameRequirements gameRequirements : gameRequirementsList) {
                 GameAndGameReq gameAndGameReq = new GameAndGameReq();
                 gameAndGameReq.setGame(game);
-                if(gameRequirements.getType().equals("min")){
-                    gameAndGameReq.setGameRequirements(gameRequirements);
-                    gameAndGameReqList.add(gameAndGameReq);
+                if(gameRequirements
+                        .getType()
+                        .equals("min")){
+                    gameAndGameReq
+                            .setGameRequirements(gameRequirements);
+                    gameAndGameReqList
+                            .add(gameAndGameReq);
                 }
             }
-        }
-
-        List<Game> minGameList = new ArrayList<>();
-
-        for (GameAndGameReq gameAndGameReq : gameAndGameReqList) {
-            minGameList.add(gameAndGameReq.getGame());
         }
 
         List<Devices> userDevicesList = devicesRepository.findDevicesByUser(user.get());
         if(userDevicesList.isEmpty()){
             return responseFromServer(HttpStatus.NOT_FOUND,request,"No devices found");
         }
-
-
 
         List<GameAndDevicesCompatible> gameAndDevicesCompatibleList = new ArrayList<>();
 
@@ -317,15 +315,22 @@ public class GameService extends CustomFunctions {
                 gameReqPassTemp.setGpuOK(false);
                 gameReqPassTemp.setCpuOK(false);
                 gameReqPassTemp.setRamSizeOK(false);
-                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks()) >= gameAndGameReq.getGameRequirements().getRamSizeReq())
+                if(((long) device.getRam().getSize() * device.getRam().getAmountOfSticks())
+                        >= gameAndGameReq.getGameRequirements().getRamSizeReq())
                     gameReqPassTemp.setRamSizeOK(true);
-                if(device.getCpu().getScore() >= gameAndGameReq.getGameRequirements().getCpu().getScore())
+                if(device.getCpu().getScore() >=
+                        gameAndGameReq.getGameRequirements().getCpu().getScore())
                     gameReqPassTemp.setCpuOK(true);
-                if(device.getGpu().getScore() >= gameAndGameReq.getGameRequirements().getGpu().getScore())
+                if(device.getGpu().getScore() >=
+                        gameAndGameReq.getGameRequirements().getGpu().getScore())
                     gameReqPassTemp.setGpuOK(true);
-                if(device.getOs().getOsID() >= gameAndGameReq.getGameRequirements().getOs().getOsID())
+                if(device.getOs().getOsID() >=
+                        gameAndGameReq.getGameRequirements().getOs().getOsID())
                     gameReqPassTemp.setOsOK(true);
-                if(gameReqPassTemp.isCpuOK() && gameReqPassTemp.isGpuOK() && gameReqPassTemp.isRamSizeOK() && gameReqPassTemp.isOsOK())
+                if(gameReqPassTemp.isCpuOK()
+                        && gameReqPassTemp.isGpuOK()
+                        && gameReqPassTemp.isRamSizeOK()
+                        && gameReqPassTemp.isOsOK())
                     compatibleDevices.add(device);
             }
             gameAndDevicesCompatible.setCompatibleDevices(compatibleDevices);
